@@ -1,0 +1,8 @@
+1. Master problem -> test
+    -class stuff up correctly
+    -generate variables in correct structure
+    -look into 'self' renaming
+2. Longest path sub-problem
+    -do algorithm path solver
+        -probably own class for solving graph
+3. Branch and Price Business
