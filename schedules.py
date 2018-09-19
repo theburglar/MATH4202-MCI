@@ -27,8 +27,8 @@ D = 1
 
 ###############################################
 n_i = 3
-n_d = 4
-n_a = 5
+n_d = 3
+n_a = 4
 w_i = 3
 w_d = 3
 c_h = [10 for i in range(5)]
@@ -36,7 +36,7 @@ c_h = [10 for i in range(5)]
 ###############################################
 
 #time to hospital
-t_h = [random.randint(5,50) for h in c_h]
+t_h = sorted([random.randint(5,50) for h in c_h])
 
 H = range(len(c_h))
 
@@ -60,6 +60,14 @@ def generate_schedules(schedule, resources_h, p_i, p_d):
         return [schedule]
     return schedules
 
+def generate_immediate_schedules(schedule, resources_h, p_i, p_d):
+    schedules = []
+
+    while p_i > 0:
+
+
+
+
 def analyse_schedule(schedule):
     g = 0
     a = [0, 0]
@@ -76,27 +84,12 @@ def analyse_schedule(schedule):
 
 
 ss = generate_schedules([], c_h, n_i, n_d)
-for s in ss:
-    print(s)
 print(len(ss))
 
-# w = {I: w_i, D: w_d}
-# n = {I: n_i, D: n_d}
-#
-# def bitchin_it():
-#     schedules = []
-#     resources_h = c_h[:]
-#     p_i = n_i
-#     p_d = n_d
-#
-#     new_schedules = []
-#     for schedule in schedules:
-#         for h in H:
-#             for p in (I, D):
-#                 if resources_h[h] >= w[p] and n[p] > 0:
-#
-#                     schedules.append()
-#                     resources_h[h] -= w_i
+ii = generate_immediate_schedules([], c_h, n_i, n_d)
+for i in ii:
+    print(i)
+print(len(ii))
 
 
 
