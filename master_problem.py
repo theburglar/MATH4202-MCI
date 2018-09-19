@@ -7,12 +7,13 @@ n_a = 2
 w_i = 3
 w_d = 3
 c_h = [10 for i in range(3)]
-t_h = [10,10,5]
+times = [10, 10, 5]
 
 I = 0
 D = 1
 n = [n_i, n_d]
 P = [I, D]
+w = [w_i, w_d]
 
 PES = 0
 MOD = 1
@@ -78,9 +79,9 @@ def get_gs(schedule):
     g = 0
     t = 0
     for p, h in schedule:
-        t += t_h[h]
+        t += times[h]
         g += f_p(t,p)
-        t += t_h[h]
+        t += times[h]
     return g
     
 
@@ -115,5 +116,61 @@ for s in lambda_s:
         print(schedules[s])
         print(get_gs(schedules[s]))
 
-nodes = [(p,h) for p in P for h in H]
-        
+
+######################################################################
+#        SUB-PROBLEM
+######################################################
+
+vertices = [(p,h) for p in P for h in H]
+V = range(len(vertices))
+
+def F(W, R, i, j, T):
+
+    # previous trip
+    p_i, h_i = vertices[i] if i is not None else (0, 0)
+    p_j, h_j = vertices[j]
+
+    # increase number of patients p
+    W[p_j] += 1
+    # increase resources used as hospital h
+    W[h_j+2] += w[p_j]
+
+    # dual variables
+    pi = MaxPeople[p_j].pi
+    rho = ResourceCapacity[h_j].pi
+
+    R_j = R + f_p(T, p_j) - pi - w[p_j]*rho
+    T = T + times[h_i] + times[h_j] if i is not None else T + times[h_j]
+
+    return W, R, T
+
+
+#Step 0 Initialisation
+i = None  #current vertex
+j = None
+T = 0   #current time
+
+W_i = [0, 0] + [0 for h in H]
+R_i = 0
+E = [{} for v in V]
+L = [(W_i, R_i)]
+
+while len(L) > 0:
+    #Step 1
+    W_i, R_i = L.pop(0)
+
+    #Step 2
+    for j, v in enumerate(vertices):
+        W_j, R_j, T_j = F([W, R, i, j, T])
+
+
+
+
+
+
+
+
+
+
+
+

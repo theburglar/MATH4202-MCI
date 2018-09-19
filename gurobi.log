@@ -1,0 +1,25 @@
+
+Gurobi 7.5.2 (win64, Python) logging started 09/19/18 14:20:27
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Variable types: 0 continuous, 25 integer (25 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [2e+00, 1e+01]
+Found heuristic solution: objective 1.5149085
+Presolve removed 6 rows and 25 columns
+Presolve time: 0.01s
+Presolve: All rows and columns removed
+
+Explored 0 nodes (0 simplex iterations) in 0.03 seconds
+Thread count was 1 (of 4 available processors)
+
+Solution count 2: 1.95784 1.51491 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.957839499930e+00, best bound 1.957839499930e+00, gap 0.0000%
