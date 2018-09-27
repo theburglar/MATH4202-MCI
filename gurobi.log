@@ -23,3 +23,661 @@ Solution count 2: 1.95784 1.51491
 
 Optimal solution found (tolerance 1.00e-04)
 Best objective 1.957839499930e+00, best bound 1.957839499930e+00, gap 0.0000%
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:18:43
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Variable types: 0 continuous, 25 integer (25 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [2e+00, 1e+01]
+Found heuristic solution: objective 1.5149085
+Presolve removed 6 rows and 25 columns
+Presolve time: 0.02s
+Presolve: All rows and columns removed
+
+Explored 0 nodes (0 simplex iterations) in 0.02 seconds
+Thread count was 1 (of 4 available processors)
+
+Solution count 2: 1.95784 1.51491 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.957839499930e+00, best bound 1.957839499930e+00, gap 0.0000%
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:19:21
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Variable types: 0 continuous, 25 integer (25 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [2e+00, 1e+01]
+Found heuristic solution: objective 1.5149085
+Presolve removed 6 rows and 25 columns
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds
+Thread count was 1 (of 4 available processors)
+
+Solution count 2: 1.95784 1.51491 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.957839499930e+00, best bound 1.957839499930e+00, gap 0.0000%
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:19:33
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:24:57
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:25:10
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:26:44
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:27:54
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:29:19
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:30:16
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:31:32
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:37:02
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:37:12
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:38:30
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:39:07
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.02 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:43:41
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.02 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:46:38
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:47:12
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:47:31
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:51:23
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:53:12
+
+Academic license - for non-commercial use only
+Parameter OutputFlag unchanged
+   Value: 1  Min: 0  Max: 1  Default: 1
+Optimize a model with 6 rows, 25 columns and 103 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+00]
+  Objective range  [2e-01, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e+00, 1e+01]
+Presolve removed 0 rows and 13 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 12 columns, 45 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    6.5185610e+00   1.334979e+01   0.000000e+00      0s
+       6    1.9595781e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 6 iterations and 0.00 seconds
+Optimal objective  1.959578138e+00
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:53:22
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:53:36
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:57:40
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 10:58:34
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:00:13
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:01:09
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:08:03
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:11:30
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:13:49
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:15:04
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:17:25
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:19:11
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:21:56
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:26:29
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:27:55
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:29:54
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:31:01
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:32:38
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:33:11
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:46:47
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:48:42
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:48:51
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:49:00
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:50:59
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 11:54:30
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:09:31
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:09:38
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:11:07
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:12:06
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:14:29
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:14:48
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:30:03
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:30:51
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:33:58
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:34:18
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:34:24
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:36:46
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:37:20
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 12:55:52
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:03:34
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:04:20
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:05:01
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:05:54
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:07:18
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:08:20
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:08:51
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:09:14
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:11:23
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:14:52
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:15:21
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:17:11
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:17:35
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:17:58
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:18:13
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:18:18
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:20:05
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:24:40
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:25:01
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:25:42
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:26:03
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:26:44
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:26:55
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:27:01
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:27:20
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:31:26
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:33:28
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:46:35
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:49:57
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:50:17
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:50:58
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:51:06
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:56:16
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:56:23
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 13:59:49
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 14:00:03
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 14:00:21
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 14:00:52
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 14:12:11
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 14:13:43
+
+Academic license - for non-commercial use only
+
+Gurobi 7.5.2 (win64, Python) logging started 09/27/18 14:15:37
+
+Academic license - for non-commercial use only
