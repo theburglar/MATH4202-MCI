@@ -2,12 +2,12 @@ from gurobipy import *
 from pprint import pprint
 import random
 
-n_i = 2
-n_d = 2
-n_a = 30
+n_i = 4
+n_d = 4
+n_a = 2
 w_i = 3
 w_d = 3
-c = [5 for i in range(3)]
+c = [9 for i in range(3)]
 times = [10, 10, 5]
 
 I = 0
@@ -33,6 +33,7 @@ START_NODE = -1
 FINAL_PATIENT = 0
 FINAL_HOSPITAL = 0
 FINAL_NODE = None
+
 
 
 def generate_schedules(schedule, resources_h, p_i, p_d):
@@ -104,6 +105,8 @@ def subproblem():
         W_ = list(W_)
         # previous trip
         p_i, h_i = vertices[i] if i != START_NODE else (0, 0)
+        
+        # current vertex
         p_j, h_j = vertices[j]
 
         # increase number of patients p
@@ -115,7 +118,7 @@ def subproblem():
         pi = MaxPeople[p_j].pi
         rho = ResourceCapacity[h_j].pi
         sigma = MaxAmbulances.pi
-        print('IT\s TIME!', pi, rho, sigma)
+        # print('IT\s TIME!', pi, rho, sigma)
 
         R_j = R + f_p(T, p_j) - pi - w[p_j]*rho if i is not FINAL_NODE else R - sigma
         # print('R_j', R_j)
@@ -171,10 +174,12 @@ def subproblem():
     while len(L) > 0:
         #Step 1
         i, W_i, R_i, T_i, s = L.pop(0)
-
+        # pprint(len(L))
+        
         if i == len(V):
             # node v_f
             continue
+    
 
         #Step 2
         for j, v in enumerate(vertices):
@@ -190,7 +195,7 @@ def subproblem():
                     E[j].add(label)
 
     # Good boi labels
-    # pprint(E[FINAL_NODE])
+   # pprint(E[FINAL_NODE])
     return max(E[FINAL_NODE], key=lambda x: x[2])
 
 ######################################################################
@@ -198,8 +203,8 @@ def subproblem():
 ######################################################################
 
 H = range(len(c))
-schedules = all_schedules([], c, n_i, n_d)
-schedules = [[(0,2)]]
+# schedules = all_schedules([], c, n_i, n_d)
+schedules = [[(0,0)]]
 S = range(len(schedules))
 
 master = Model('Master Problem')
@@ -228,21 +233,20 @@ MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
 #     if lambda_s[s].x==1:
 #         print(schedules[s])
 #         print(get_gs(schedules[s]))
-
+master.optimize()
 while True:
-    master.optimize()
     # print(','.join([str(MaxPeople[p].pi) for p in P]))
     # print(','.join([str(ResourceCapacity[h].pi) for h in H]))
     # print(MaxAmbulances.pi)
     # print('LAMBDAS', lambda_s)
 
-    pprint(master.getConstrs())
+    # pprint(master.getConstrs())
 
     # print('#' * 80)
     solution = subproblem()
-    print('#' * 80)
+    # print('#' * 80)
     pprint(solution)
-    pprint(schedules)
+    # pprint(schedules)
 
 
     schedules.append(list(solution[-1]))
@@ -265,3 +269,6 @@ while True:
 
     # new objective
     master.setObjective(quicksum(get_gs(schedules[s]) * lambda_s[s] for s in S), GRB.MAXIMIZE)
+    master.optimize()
+    for s in S:
+        print(str(schedules[s])+" Lambda: "+str(lambda_s[s].x))
