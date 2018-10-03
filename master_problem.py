@@ -7,7 +7,7 @@ n_d = 4
 n_a = 2
 w_i = 3
 w_d = 3
-c = [9 for i in range(3)]
+c = [8 for i in range(3)]
 times = [10, 10, 5]
 
 I = 0
@@ -82,16 +82,21 @@ def f_p(t, p):
     :param p: type of patient (I: immediate, D: delayed)
     :return:
     """
-    b_0, b_1, b_2 = SURVIVAL_RATES[MOD][I] if p == I else SURVIVAL_RATES[MOD][D]
+    b_0, b_1, b_2 = SURVIVAL_RATES[PES][I] if p == I else SURVIVAL_RATES[PES][D]
     return b_0 / (((t / b_1) ** b_2) + 1)
     
 def get_gs(schedule):
-    g = 0
-    t = 0
-    for p, h in schedule:
-        t += times[h]
-        g += f_p(t,p)
-        t += times[h]
+    p_i,h_i = schedule[0]
+    t = times[h_i]
+    g = f_p(t, p_i)
+    
+    for i in range(1, len(schedule)):
+        p_j,h_j = schedule[i]
+        
+        t += times[h_i] + times[h_j]
+        g += f_p(t,p_j)
+        
+        p_i,h_i = p_j,h_j
     return g
 
 ######################################################################
@@ -100,29 +105,40 @@ def get_gs(schedule):
 
 def subproblem():
 
+    # TODO: Make T T_j, etc. 
     def F(W_, R, i, j, T):
-
+        
         W_ = list(W_)
         # previous trip
         p_i, h_i = vertices[i] if i != START_NODE else (0, 0)
         
         # current vertex
-        p_j, h_j = vertices[j]
-
-        # increase number of patients p
-        W_[p_j] = W_[p_j] + 1 if i != FINAL_NODE else W_[p_j]
-        # increase resources used as hospital h
-        W_[h_j + 2] = W_[h_j + 2] + w[p_j] if i != FINAL_NODE else W_[h_j + 2]
-
-        # dual variables
-        pi = MaxPeople[p_j].pi
-        rho = ResourceCapacity[h_j].pi
-        sigma = MaxAmbulances.pi
-        # print('IT\s TIME!', pi, rho, sigma)
-
-        R_j = R + f_p(T, p_j) - pi - w[p_j]*rho if i is not FINAL_NODE else R - sigma
+        p_j, h_j = vertices[j] 
+        
+        if i==START_NODE:
+            T = times[h_j]
+        elif j != FINAL_NODE:
+            T += times[h_i] + times[h_j]
+               
+        if j==FINAL_NODE: 
+            sigma = MaxAmbulances.pi
+            R_j = R-sigma
+            return tuple(W_), R_j, T
+            
+        else:
+            
+            W_[p_j] = W_[p_j] + 1
+            W_[h_j + 2] = W_[h_j + 2] + w[p_j]
+            
+            # dual variables
+            pi = MaxPeople[p_j].pi
+            rho = ResourceCapacity[h_j].pi
+            
+           # print('IT\s TIME!', pi, rho, sigma)
+            R_j = R + f_p(T, p_j) - pi - w[p_j]*rho 
+            return tuple(W_), R_j, T
+        
         # print('R_j', R_j)
-        T = T + times[h_i] + times[h_j] if i is not START_NODE else times[h_j]
 
         return tuple(W_), R_j, T
 
@@ -176,7 +192,7 @@ def subproblem():
         i, W_i, R_i, T_i, s = L.pop(0)
         # pprint(len(L))
         
-        if i == len(V):
+        if i == FINAL_NODE:
             # node v_f
             continue
     
@@ -187,7 +203,10 @@ def subproblem():
 
             if not any(res > res_max for  res, res_max in zip(W_j, n + c)):
                 if not is_dominated_by_set(W_j, R_j, E[j]):
-                    s_j = s + (vertices[j],)
+                    if j != FINAL_NODE:
+                        s_j = s + (vertices[j],)
+                    else: 
+                        s_j = s
                     label = (j, W_j, R_j, T_j, s_j)
                     L.append(label)
 
@@ -234,7 +253,7 @@ MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
 #         print(schedules[s])
 #         print(get_gs(schedules[s]))
 master.optimize()
-while True:
+for itc in range(20):
     # print(','.join([str(MaxPeople[p].pi) for p in P]))
     # print(','.join([str(ResourceCapacity[h].pi) for h in H]))
     # print(MaxAmbulances.pi)
@@ -246,6 +265,10 @@ while True:
     solution = subproblem()
     # print('#' * 80)
     pprint(solution)
+    ls = list(solution[-1])
+    print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
+          sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
+          MaxAmbulances.pi)
     # pprint(schedules)
 
 
