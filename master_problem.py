@@ -9,6 +9,8 @@ from gurobipy import *
 from pprint import pprint
 import random
 
+from copy import deepcopy
+
 n_i = 4
 n_d = 4
 n_a = 10
@@ -45,7 +47,7 @@ vertices = [(p,h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
 V = range(len(vertices))
 FINAL_NODE = len(V) - 1
 
-epsilon = 10**-15
+EPSILON = 10**-7
 
 def f_p(t, p):
     """
@@ -181,7 +183,7 @@ def subproblem():
 
             if not any(res > res_max for  res, res_max in zip(W_j, n + c)):
                 if not is_dominated_by_set(W_j, R_j, E[j]):
-                    if (R_j > epsilon):
+                    if (R_j > EPSILON):
                         if j != FINAL_NODE:
                             s_j = s + (vertices[j],)
                         else: 
@@ -198,7 +200,11 @@ def subproblem():
 
 ######################################################################
 #              MASTER PROBLEM
+#
+#              Adding good schedules from subproblem
 ######################################################################
+
+
 
 H = range(len(c))
 # schedules = all_schedules([], c, n_i, n_d)
@@ -233,55 +239,119 @@ MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
 #         print(get_gs(schedules[s]))
 master.optimize()
 
-while True:
-    # print(','.join([str(MaxPeople[p].pi) for p in P]))
-    # print(','.join([str(ResourceCapacity[h].pi) for h in H]))
-    # print(MaxAmbulances.pi)
-    # print('LAMBDAS', lambda_s)
-
-    # pprint(master.getConstrs())
-
-    # print('#' * 80)
-    solution = subproblem()
+def solve_RMP():
+    while True:
+        
+        global MaxPeople
+        global ResourceCapacity
+        global MaxAmbulances
+        
+        solution = subproblem()
+        
+        if solution is None:
+            break
+        # print('#' * 80)
+        pprint(solution)
+        ls = list(solution[-1])
+        print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
+              sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
+              MaxAmbulances.pi)
+        # pprint(schedules)
     
-    if solution is None:
-        break
-    # print('#' * 80)
-    pprint(solution)
-    ls = list(solution[-1])
-    print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
-          sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
-          MaxAmbulances.pi)
-    # pprint(schedules)
+    
+        schedules.append(list(solution[-1]))
+        S = range(len(schedules))
+    
+        lambda_s[len(S)-1] = master.addVar()
+    
+        # remove all constraints
+        master.remove(master.getConstrs())
+    
+        # new constraints
+        MaxPeople = {p: master.addConstr(
+            quicksum(get_people(schedules[s])[p] * lambda_s[s]
+                     for s in S) <= n[p])
+            for p in P}
+        ResourceCapacity = {h: master.addConstr(
+                            quicksum(get_resources_used(schedules[s])[h] * lambda_s[s] for s in S) <= c[h])
+                            for h in H}
+        MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
+    
+        # new objective
+        master.setObjective(quicksum(get_gs(schedules[s]) * lambda_s[s] for s in S), GRB.MAXIMIZE)
+        master.optimize()
+        for s in S:
+            print(str(schedules[s])+" Lambda: "+str(lambda_s[s].x))
 
 
-    schedules.append(list(solution[-1]))
-    S = range(len(schedules))
 
-    lambda_s[len(S)-1] = master.addVar()
+def is_integer(num):
+    return abs(num % 1 - 0.5) > 0.5 - EPSILON
 
-    # remove all constraints
-    master.remove(master.getConstrs())
-
-    # new constraints
-    MaxPeople = {p: master.addConstr(
-        quicksum(get_people(schedules[s])[p] * lambda_s[s]
-                 for s in S) <= n[p])
-        for p in P}
-    ResourceCapacity = {h: master.addConstr(
-                        quicksum(get_resources_used(schedules[s])[h] * lambda_s[s] for s in S) <= c[h])
-                        for h in H}
-    MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
-
-    # new objective
-    master.setObjective(quicksum(get_gs(schedules[s]) * lambda_s[s] for s in S), GRB.MAXIMIZE)
-    master.optimize()
+def solve_RIP():
     for s in S:
-        print(str(schedules[s])+" Lambda: "+str(lambda_s[s].x))
+        lambda_s[s].vType = GRB.INTEGER
+    master.optimize()
+
+##############################################################################
+#           START
+##############################################################################
+
+node_stack = []
+
+solve_RMP()
+solve_RIP()
+
+BF4EVA = master.objVal
+
+for s in S:
+    lambda_s[s].vType = GRB.CONTINUOUS
+    
+
+node_stack.append([[], schedules])
+###############################################################################
+#       Branch and Price to get Integer Solution
+###############################################################################
+
+def continue_branching():
+    
+    if any(not(is_integer(s)) for s in lambda_s):
+        return True
+    if master.objVal < BF4EVA:
+        BF4EVA = master.objVal
+        print('*******New Incumbent Solution', BF4EVA)
+    return False
+
+def solve_node():
+    #get parent's schedules for lambda_s variables
+    
+    #get all theta_q_j and alpha_j from parent -> add branch constraints
+    
+    solve_RMP()
+    
+    
+    
+    pass
 
 
-
-
-
+while True:
+    
+    if continue_branching():
+        determine new alpha_j, new q, new Theta_q_j
+        and add them onto Theta_q_j_and_a_js_and_high_low
+        
+        node_stack.append([Theta_q_j_and_a_js_and_high_low, deepcopy(schedules), True])
+        node_stack.append([Theta_q_j_and_a_js_and_high_low, deepcopy(schedules), False])
+    
+    try:
+        Theta_q_j_and_a_js_and_high_low, schedules = CurrNode = node_stack.pop()
+    except IndexError:
+        break
+    
+    solve_node(CurrNode)
+    
+    
+#el donzoes
+print('We did it friends!', master)
 
 
