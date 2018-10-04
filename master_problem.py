@@ -1,13 +1,20 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct  3 11:59:40 2018
+
+@author: rosie
+"""
+
 from gurobipy import *
 from pprint import pprint
 import random
 
 n_i = 4
 n_d = 4
-n_a = 2
+n_a = 10
 w_i = 3
 w_d = 3
-c = [8 for i in range(3)]
+c = [9 for i in range(3)]
 times = [10, 10, 5]
 
 I = 0
@@ -34,34 +41,20 @@ FINAL_PATIENT = 0
 FINAL_HOSPITAL = 0
 FINAL_NODE = None
 
+vertices = [(p,h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
+V = range(len(vertices))
+FINAL_NODE = len(V) - 1
 
+epsilon = 10**-15
 
-def generate_schedules(schedule, resources_h, p_i, p_d):
-    schedules = []
-    more = False
-    for h in H:
-        if resources_h[h] >= w_i and p_i > 0:
-            new_schedule = schedule[:] + [(I, h)]
-            new_resources = resources_h[:]
-            new_resources[h] -= w_i
-            schedules.extend(generate_schedules(new_schedule, new_resources, p_i-1, p_d))
-            more = True
-        if resources_h[h] >= w_d and p_d > 0:
-            new_schedule = schedule[:] + [(D, h)]
-            new_resources = resources_h[:]
-            new_resources[h] -= w_d
-            schedules.extend(generate_schedules(new_schedule, new_resources, p_i, p_d-1))
-            more = True
-    if not more:
-        return [schedule]
-    return schedules
-    
-def all_schedules(schedule, resources_h, p_i, p_d):
-    schedules = []
-    for i in range(p_i):
-        for d in range(p_d):
-            schedules.extend(generate_schedules([], resources_h, i, d))
-    return schedules
+def f_p(t, p):
+    """
+    :param t: time
+    :param p: type of patient (I: immediate, D: delayed)
+    :return:
+    """
+    b_0, b_1, b_2 = SURVIVAL_RATES[PES][I] if p == I else SURVIVAL_RATES[PES][D]
+    return b_0 / (((t / b_1) ** b_2) + 1)
 
 def get_resources_used(schedule):
     b_h = [0 for h in range(len(c))]
@@ -75,16 +68,7 @@ def get_people(schedule):
     for p, h in schedule:
         a[p] += 1
     return a
-    
-def f_p(t, p):
-    """
-    :param t: time
-    :param p: type of patient (I: immediate, D: delayed)
-    :return:
-    """
-    b_0, b_1, b_2 = SURVIVAL_RATES[PES][I] if p == I else SURVIVAL_RATES[PES][D]
-    return b_0 / (((t / b_1) ** b_2) + 1)
-    
+
 def get_gs(schedule):
     p_i,h_i = schedule[0]
     t = times[h_i]
@@ -103,81 +87,77 @@ def get_gs(schedule):
 #        SUB-PROBLEM
 ######################################################################
 
-def subproblem():
-
-    # TODO: Make T T_j, etc. 
-    def F(W_, R, i, j, T):
-        
-        W_ = list(W_)
-        # previous trip
-        p_i, h_i = vertices[i] if i != START_NODE else (0, 0)
-        
-        # current vertex
-        p_j, h_j = vertices[j] 
-        
-        if i==START_NODE:
-            T = times[h_j]
-        elif j != FINAL_NODE:
-            T += times[h_i] + times[h_j]
-               
-        if j==FINAL_NODE: 
-            sigma = MaxAmbulances.pi
-            R_j = R-sigma
-            return tuple(W_), R_j, T
-            
-        else:
-            
-            W_[p_j] = W_[p_j] + 1
-            W_[h_j + 2] = W_[h_j + 2] + w[p_j]
-            
-            # dual variables
-            pi = MaxPeople[p_j].pi
-            rho = ResourceCapacity[h_j].pi
-            
-           # print('IT\s TIME!', pi, rho, sigma)
-            R_j = R + f_p(T, p_j) - pi - w[p_j]*rho 
-            return tuple(W_), R_j, T
-        
-        # print('R_j', R_j)
-
+# TODO: Make T T_j, etc. 
+def F(W_, R, i, j, T):
+    
+    W_ = list(W_)
+    # previous trip
+    p_i, h_i = vertices[i] if i != START_NODE else (0, 0)
+    
+    # current vertex
+    p_j, h_j = vertices[j] 
+    
+    if i==START_NODE:
+        T = times[h_j]
+    elif j != FINAL_NODE:
+        T += times[h_i] + times[h_j]
+           
+    if j==FINAL_NODE: 
+        sigma = MaxAmbulances.pi
+        R_j = R-sigma
         return tuple(W_), R_j, T
+        
+    else:
+        
+        W_[p_j] = W_[p_j] + 1
+        W_[h_j + 2] = W_[h_j + 2] + w[p_j]
+        
+        # dual variables
+        pi = MaxPeople[p_j].pi
+        rho = ResourceCapacity[h_j].pi
+        
+       # print('IT\s TIME!', pi, rho, sigma)
+        R_j = R + f_p(T, p_j) - pi - w[p_j]*rho 
+        return tuple(W_), R_j, T
+    
+    # print('R_j', R_j)
 
-    def is_dominated(W, R, W_, R_):
-        """returns whether the label W_,R_ is dominated by label W,R"""
-        for i in P:
-            # people count
-            if W_ [i] > W[i]:
-                return False
-        for i in range(2, len(W)):
-            # hospital resources
-            if W_ [i] < W[i]:
-                return False
-        if R_ > R:
+    return tuple(W_), R_j, T
+
+def is_dominated(W, R, W_, R_):
+    """returns whether the label W_,R_ is dominated by label W,R"""
+    for i in P:
+        # people count
+        if W_ [i] > W[i]:
             return False
-
-        return True
-
-    def is_dominated_by_set(W_, R_, labels):
-        """returns whether the label W_, R_ is dominated by any vector in labels"""
-        for i, W, R, t, s in labels:
-            if is_dominated(W, R, W_, R_):
-                # W_,R_ is dominated by W,R
-                return True
+    for i in range(2, len(W)):
+        # hospital resources
+        if W_ [i] < W[i]:
+            return False
+    if R_ > R:
         return False
 
-    def EFF(W, R, labels):
-        """returns the set of labels from labels that is not dominated by W, R"""
-        eff = set()
-        for i, W_, R_, t, s in labels:
-            if not(all(W[i] <= W_[i] for i in range(len(W))) and R >= R_):
-                # W_,R_ is not dominated by W,R
-                eff.add((i, W_, R_, t, s))
-        return eff
+    return True
 
-    vertices = [(p,h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
-    V = range(len(vertices))
-    FINAL_NODE = len(V) - 1
+def is_dominated_by_set(W_, R_, labels):
+    """returns whether the label W_, R_ is dominated by any vector in labels"""
+    for i, W, R, t, s in labels:
+        if is_dominated(W, R, W_, R_):
+            # W_,R_ is dominated by W,R
+            return True
+    return False
 
+def EFF(W, R, labels):
+    """returns the set of labels from labels that is not dominated by W, R"""
+    eff = set()
+    for i, W_, R_, t, s in labels:
+        if not(all(W[i] <= W_[i] for i in range(len(W))) and R >= R_):
+            # W_,R_ is not dominated by W,R
+            eff.add((i, W_, R_, t, s))
+    return eff
+
+
+def subproblem():
     #Step 0 Initialisation
     T = 0   #current time
     W_i = (0, 0) + tuple([0 for h in H])
@@ -192,29 +172,30 @@ def subproblem():
         i, W_i, R_i, T_i, s = L.pop(0)
         # pprint(len(L))
         
-        if i == FINAL_NODE:
+        if i == len(V):
             # node v_f
             continue
-    
-
         #Step 2
         for j, v in enumerate(vertices):
             W_j, R_j, T_j = F(W_i, R_i, i, j, T_i)
 
             if not any(res > res_max for  res, res_max in zip(W_j, n + c)):
                 if not is_dominated_by_set(W_j, R_j, E[j]):
-                    if j != FINAL_NODE:
-                        s_j = s + (vertices[j],)
-                    else: 
-                        s_j = s
-                    label = (j, W_j, R_j, T_j, s_j)
-                    L.append(label)
-
-                    E[j] = EFF(W_j, R_j, E[j])
-                    E[j].add(label)
-
+                    if (R_j > epsilon):
+                        if j != FINAL_NODE:
+                            s_j = s + (vertices[j],)
+                        else: 
+                            s_j = s
+                        label = (j, W_j, R_j, T_j, s_j)
+                        L.append(label)
+                        E[j] = EFF(W_j, R_j, E[j])
+                        E[j].add(label)
+        #print("Length: ",len(L),", E: ",len(list(E[FINAL_NODE])))
     # Good boi labels
    # pprint(E[FINAL_NODE])
+   
+    if len(list(E[FINAL_NODE]))==0:
+        return None
     return max(E[FINAL_NODE], key=lambda x: x[2])
 
 ######################################################################
@@ -253,7 +234,8 @@ MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
 #         print(schedules[s])
 #         print(get_gs(schedules[s]))
 master.optimize()
-for itc in range(20):
+
+while True:
     # print(','.join([str(MaxPeople[p].pi) for p in P]))
     # print(','.join([str(ResourceCapacity[h].pi) for h in H]))
     # print(MaxAmbulances.pi)
@@ -263,6 +245,9 @@ for itc in range(20):
 
     # print('#' * 80)
     solution = subproblem()
+    
+    if solution==None:
+        break
     # print('#' * 80)
     pprint(solution)
     ls = list(solution[-1])
@@ -295,3 +280,10 @@ for itc in range(20):
     master.optimize()
     for s in S:
         print(str(schedules[s])+" Lambda: "+str(lambda_s[s].x))
+
+
+
+
+
+
+
