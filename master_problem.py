@@ -193,10 +193,8 @@ def subproblem():
         #print("Length: ",len(L),", E: ",len(list(E[FINAL_NODE])))
     # Good boi labels
    # pprint(E[FINAL_NODE])
-   
-    if len(list(E[FINAL_NODE]))==0:
-        return None
-    return max(E[FINAL_NODE], key=lambda x: x[2])
+
+    return max(E[FINAL_NODE], default=None, key=lambda x: x[2])
 
 ######################################################################
 #              MASTER PROBLEM
@@ -246,7 +244,7 @@ while True:
     # print('#' * 80)
     solution = subproblem()
     
-    if solution==None:
+    if solution is None:
         break
     # print('#' * 80)
     pprint(solution)
