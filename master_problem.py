@@ -328,16 +328,14 @@ def solve_node():
     #get all theta_q_j and alpha_j from parent -> add branch constraints
     
     solve_RMP()
-    
-    
-    
-    pass
 
+def determine_new_alpha_j_new_q_new_Theta_q_j():
+    pass
 
 while True:
     
     if continue_branching():
-        determine new alpha_j, new q, new Theta_q_j
+        determine_new_alpha_j_new_q_new_Theta_q_j()
         and add them onto Theta_q_j_and_a_js_and_high_low
         
         node_stack.append([Theta_q_j_and_a_js_and_high_low, deepcopy(schedules), True])
