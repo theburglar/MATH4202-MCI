@@ -107,6 +107,10 @@ def F(W_, R, i, j, T):
     if j==FINAL_NODE: 
         sigma = MaxAmbulances.pi
         R_j = R-sigma
+
+        #TODO Check for branching constraint stuff here
+            #TODO Adjust reduced cost if so
+
         return tuple(W_), R_j, T
         
     else:
@@ -128,12 +132,13 @@ def F(W_, R, i, j, T):
 
 def is_dominated(W, R, W_, R_):
     """returns whether the label W_,R_ is dominated by label W,R"""
-    for i in P:
-        # people count
-        if W_ [i] > W[i]:
-            return False
-    for i in range(2, len(W)):
-        # hospital resources
+    # for i in P:
+    #     # people count
+    #     if W_ [i] > W[i]:
+    #         return False
+    # for i in range(2, len(W)):
+    for i in range(len(W)):
+        # people and hospital resources
         if W_ [i] < W[i]:
             return False
     if R_ > R:
@@ -204,8 +209,6 @@ def subproblem():
 #              Adding good schedules from subproblem
 ######################################################################
 
-
-
 H = range(len(c))
 # schedules = all_schedules([], c, n_i, n_d)
 schedules = [[(0,0)]]
@@ -232,6 +235,7 @@ ResourceCapacity = {h: master.addConstr(
                     for h in H}
 MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
 
+BranchConstraints = []
 
 # for s in lambda_s:
 #     if lambda_s[s].x==1:
@@ -245,9 +249,9 @@ def solve_RMP():
         global MaxPeople
         global ResourceCapacity
         global MaxAmbulances
-        
+
         solution = subproblem()
-        
+
         if solution is None:
             break
         # print('#' * 80)
@@ -263,9 +267,9 @@ def solve_RMP():
         S = range(len(schedules))
     
         lambda_s[len(S)-1] = master.addVar()
-    
-        # remove all constraints
-        master.remove(master.getConstrs())
+
+
+        #TODO Change this business to not delete all constraints
     
         # new constraints
         MaxPeople = {p: master.addConstr(
@@ -322,24 +326,38 @@ def continue_branching():
         print('*******New Incumbent Solution', BF4EVA)
     return False
 
-def solve_node():
+def solve_node(node):
     #get parent's schedules for lambda_s variables
-    
+    global schedules
+    schedules = node[1]
+
     #get all theta_q_j and alpha_j from parent -> add branch constraints
-    
+
+    #TODO Figure out how the fuck changing constraints works
+    # remove all constraints
+    master.remove(master.getConstrs())
+    BranchConstraints.clear()
+
+    for q, alpha, upper in node[0]:
+        if upper:
+            BranchConstraints[]
+        else:
+
+
     solve_RMP()
 
-def determine_new_alpha_j_new_q_new_Theta_q_j():
+def determine_new_alpha_j_new_q():
     pass
 
 while True:
     
     if continue_branching():
-        determine_new_alpha_j_new_q_new_Theta_q_j()
-        and add them onto Theta_q_j_and_a_js_and_high_low
-        
-        node_stack.append([Theta_q_j_and_a_js_and_high_low, deepcopy(schedules), True])
-        node_stack.append([Theta_q_j_and_a_js_and_high_low, deepcopy(schedules), False])
+        alpha, q = determine_new_alpha_j_new_q_new_Theta_q_j()
+
+
+
+        node_stack.append([q_j_and_a_js_and_high_low, deepcopy(schedules), True])
+        node_stack.append([q_j_and_a_js_and_high_low, deepcopy(schedules), False])
     
     try:
         Theta_q_j_and_a_js_and_high_low, schedules = CurrNode = node_stack.pop()
