@@ -424,7 +424,7 @@ while True:
         theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
 
         # add on the new tuple to the new branches
-        node_true = node + [(theta_q_j, floor(alpha_j), q_j, True)]
+        node_true = node + [(theta_q_j, ceil(alpha_j), q_j, True)]
         node_false = node + [(theta_q_j, floor(alpha_j), q_j, False)]
 
         node_stack.append(node_true)
