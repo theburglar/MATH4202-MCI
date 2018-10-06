@@ -10,13 +10,13 @@ from gurobipy import *
 from pprint import pprint
 from math import ceil, floor
 
-n_i = 5
-n_d = 5
-n_a = 10
+n_i = 7
+n_d = 7
+n_a = 6
 w_i = 3
-w_d = 3
-c = [12 for i in range(3)]
-times = [10, 10, 5]
+w_d = 1
+c = [13 for i in range(3)]
+times = [5, 5, 10]
 H = range(len(c))
 
 I = 0
@@ -48,6 +48,7 @@ V = range(len(vertices))
 FINAL_NODE = len(V) - 1
 
 EPSILON = 10**-7
+CLOSE_ENOUGH = 1.005
 
 #global map storing the resource cost of any given schedule
 # schedule_tuple -> W
@@ -115,12 +116,13 @@ def F(W_, R, i, j, T, s):
         sigma = MaxAmbulances.pi
         R_j = R-sigma
 
-        #TODO Check for branching constraint stuff here
-            #TODO Adjust reduced cost if so
+        # Check for branching constraint stuff here
+        # Adjust reduced cost if so
         for theta, alpha, q in BranchConstraints:
             if s in theta and exceeds_threshold(W_, q):
                 print('Stuff is happening')
                 R_j -= BranchConstraints[(theta, alpha, q)].pi
+                print('R_j', R_j)
 
         return tuple(W_), R_j, T
         
@@ -284,10 +286,14 @@ def is_integer(num):
 
 def continue_branching():
     global bestSoFar
+    # APPROXIMATION PRUNE
+    # if master.objVal < bestSoFar * CLOSE_ENOUGH:
+    #     print('Node pruned by approximation')
+    #     return False
 
     if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
         return True
-    if master.objVal < bestSoFar:
+    if master.objVal > bestSoFar:
         bestSoFar = master.objVal
         print('*******New Incumbent Solution', bestSoFar)
     return False
@@ -343,6 +349,9 @@ def determine_node_data(schedule_set):
     alpha = sum(lambda_s[s].x for s in theta)
 
     return theta, alpha, q
+
+def generate_priority_schedules():
+    pass
 
 ######################################################################
 #              START
