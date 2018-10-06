@@ -12,10 +12,10 @@ from math import ceil, floor
 
 n_i = 5
 n_d = 5
-n_a = 3
+n_a = 10
 w_i = 3
 w_d = 3
-c = [9 for i in range(3)]
+c = [12 for i in range(3)]
 times = [10, 10, 5]
 H = range(len(c))
 
@@ -90,14 +90,14 @@ def get_gs(schedule):
     return g
 
 def exceeds_threshold(w, q):
-    return any(w[i] >= q[i] for i in range(len(w)))
+    return all(w[i] >= q[i] for i in range(len(w)))
 
 ######################################################################
 #        SUB-PROBLEM
 ######################################################################
 
 # TODO: Make T T_j, etc. 
-def F(W_, R, i, j, T):
+def F(W_, R, i, j, T, s):
     
     W_ = list(W_)
     # previous trip
@@ -117,6 +117,10 @@ def F(W_, R, i, j, T):
 
         #TODO Check for branching constraint stuff here
             #TODO Adjust reduced cost if so
+        for theta, alpha, q in BranchConstraints:
+            if s in theta and exceeds_threshold(W_, q):
+                print('Stuff is happening')
+                R_j -= BranchConstraints[(theta, alpha, q)].pi
 
         return tuple(W_), R_j, T
         
@@ -189,7 +193,7 @@ def subproblem():
             continue
         #Step 2
         for j, v in enumerate(vertices):
-            W_j, R_j, T_j = F(W_i, R_i, i, j, T_i)
+            W_j, R_j, T_j = F(W_i, R_i, i, j, T_i, s)
 
             if not any(res > res_max for  res, res_max in zip(W_j, n + c)):
                 if not is_dominated_by_set(W_j, R_j, E[j]):
@@ -231,11 +235,11 @@ def solve_RMP():
         found += 1
 
         print('#' * 80)
-        # pprint(solution)
+        pprint(solution)
         ls = solution[-1]
-        # print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
-        #       sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
-        #       MaxAmbulances.pi)
+        print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
+              sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
+              MaxAmbulances.pi)
         # pprint(schedules)
     
         # paranoia
@@ -251,7 +255,6 @@ def solve_RMP():
             master.remove(ResourceCapacity[key])
         master.remove(MaxAmbulances)
 
-        master.remove(master.getConstrs())
         # new constraints
         MaxPeople = {p: master.addConstr(
             quicksum(get_people(s)[p] * lambda_s[s]
@@ -290,15 +293,15 @@ def continue_branching():
     return False
 
 def solve_node(node):
-    #get all theta_q_j and alpha_j from parent -> add branch constraints
+
+    global BranchConstraints
 
     #TODO Figure out how the fuck changing constraints works
     # remove all constraints
-    master.remove(master.getConstrs())
-    BranchConstraints.clear()
 
-    # print('NODEY BOI')
-    # pprint(node)
+    for key in BranchConstraints:
+        master.remove(BranchConstraints[key])
+    BranchConstraints.clear()
 
     for theta, alpha, q, upper in node:
         if upper:
@@ -312,6 +315,7 @@ def solve_node(node):
                 for s in theta
             ) <= alpha)
 
+    master.optimize()
     solve_RMP()
 
 def determine_node_data(schedule_set):
@@ -390,6 +394,7 @@ solve_RMP()
 solve_RIP()
 
 bestSoFar = master.objVal
+print('First RIP Solution', bestSoFar)
 
 for s in lambda_s:
     lambda_s[s].vType = GRB.CONTINUOUS
@@ -401,9 +406,11 @@ node_stack = []
 node = [] #TODO
 nodes_explored = 1
 
-test = 1
-while test < 3:
-    test += 1
+
+while True:
+# test = 1
+# while test < 10:
+#     test += 1
     if continue_branching():
         theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
 
@@ -426,13 +433,23 @@ while test < 3:
     pprint(node_stack)
     print('SOLVING NODE')
     pprint(node)
-    solve_node(node)
+    try:
+        solve_node(node)
+    except ValueError as e:
+        print('ERROR:', e)
+        print('EXITING...')
+        break
 
 #el donzoes
 # for s in lambda_s:
 #     print(str(s) + " Lambda: " + str(lambda_s[s].x))
 
-print('We did it friends!')
+print('Schedules selected:')
+for s in lambda_s:
+    if lambda_s[s].x > EPSILON:
+        print(f'{lambda_s[s].x} lot(s) of', s)
+
+
 print(f'Explored {nodes_explored} nodes')
 
 
