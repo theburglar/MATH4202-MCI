@@ -5,19 +5,19 @@ Created on Wed Oct  3 11:59:40 2018
 @author: rosie
 """
 
+import random
 from gurobipy import *
 from pprint import pprint
-import random
+from math import ceil, floor
 
-from copy import deepcopy
-
-n_i = 4
-n_d = 4
-n_a = 10
+n_i = 5
+n_d = 5
+n_a = 3
 w_i = 3
 w_d = 3
 c = [9 for i in range(3)]
 times = [10, 10, 5]
+H = range(len(c))
 
 I = 0
 D = 1
@@ -48,6 +48,10 @@ V = range(len(vertices))
 FINAL_NODE = len(V) - 1
 
 EPSILON = 10**-7
+
+#global map storing the resource cost of any given schedule
+# schedule_tuple -> W
+schedule_resources = {}
 
 def f_p(t, p):
     """
@@ -84,6 +88,9 @@ def get_gs(schedule):
         
         p_i,h_i = p_j,h_j
     return g
+
+def exceeds_threshold(w, q):
+    return any(w[i] >= q[i] for i in range(len(w)))
 
 ######################################################################
 #        SUB-PROBLEM
@@ -125,10 +132,6 @@ def F(W_, R, i, j, T):
        # print('IT\s TIME!', pi, rho, sigma)
         R_j = R + f_p(T, p_j) - pi - w[p_j]*rho 
         return tuple(W_), R_j, T
-    
-    # print('R_j', R_j)
-
-    return tuple(W_), R_j, T
 
 def is_dominated(W, R, W_, R_):
     """returns whether the label W_,R_ is dominated by label W,R"""
@@ -165,6 +168,8 @@ def EFF(W, R, labels):
 
 
 def subproblem():
+    global schedule_resources
+
     #Step 0 Initialisation
     T = 0   #current time
     W_i = (0, 0) + tuple([0 for h in H])
@@ -188,11 +193,15 @@ def subproblem():
 
             if not any(res > res_max for  res, res_max in zip(W_j, n + c)):
                 if not is_dominated_by_set(W_j, R_j, E[j]):
-                    if (R_j > EPSILON):
+                    if R_j > EPSILON:
                         if j != FINAL_NODE:
                             s_j = s + (vertices[j],)
                         else: 
                             s_j = s
+
+                        # update the global dictionary of schedule costs
+                        schedule_resources[s_j] = W_j
+
                         label = (j, W_j, R_j, T_j, s_j)
                         L.append(label)
                         E[j] = EFF(W_j, R_j, E[j])
@@ -203,134 +212,84 @@ def subproblem():
 
     return max(E[FINAL_NODE], default=None, key=lambda x: x[2])
 
-######################################################################
-#              MASTER PROBLEM
-#
-#              Adding good schedules from subproblem
-######################################################################
-
-H = range(len(c))
-# schedules = all_schedules([], c, n_i, n_d)
-schedules = [[(0,0)]]
-S = range(len(schedules))
-
-master = Model('Master Problem')
-master.setParam('OutputFlag', 0)
-
-# Variables
-lambda_s = {s: master.addVar() #vtype=GRB.BINARY
-            for s in S}
-
-# Objective
-master.setObjective(quicksum(get_gs(schedules[s]) * lambda_s[s] for s in S), GRB.MAXIMIZE)
-
-# Constraints
-MaxPeople = {p: master.addConstr(
-                    quicksum(get_people(schedules[s])[p] * lambda_s[s]
-                             for s in S) <= n[p])
-             for p in P}
-ResourceCapacity = {h: master.addConstr(
-                        quicksum(get_resources_used(schedules[s])[h] * lambda_s[s]
-                                 for s in S) <= c[h])
-                    for h in H}
-MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
-
-BranchConstraints = []
-
-# for s in lambda_s:
-#     if lambda_s[s].x==1:
-#         print(schedules[s])
-#         print(get_gs(schedules[s]))
-master.optimize()
-
 def solve_RMP():
+    global MaxPeople
+    global ResourceCapacity
+    global MaxAmbulances
+
+    found = 0
+
     while True:
-        
-        global MaxPeople
-        global ResourceCapacity
-        global MaxAmbulances
+
+        for s in lambda_s:
+            print(str(s) + " Lambda: " + str(lambda_s[s].x))
 
         solution = subproblem()
 
         if solution is None:
             break
-        # print('#' * 80)
-        pprint(solution)
-        ls = list(solution[-1])
-        print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
-              sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
-              MaxAmbulances.pi)
+        found += 1
+
+        print('#' * 80)
+        # pprint(solution)
+        ls = solution[-1]
+        # print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
+        #       sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
+        #       MaxAmbulances.pi)
         # pprint(schedules)
     
-    
-        schedules.append(list(solution[-1]))
-        S = range(len(schedules))
-    
-        lambda_s[len(S)-1] = master.addVar()
+        # paranoia
+        if ls in lambda_s:
+            raise ValueError("DUPLICATE VARIABLE:", ls)
 
+        lambda_s[ls] = master.addVar()
 
         #TODO Change this business to not delete all constraints
-    
+        for key in MaxPeople:
+            master.remove(MaxPeople[key])
+        for key in ResourceCapacity:
+            master.remove(ResourceCapacity[key])
+        master.remove(MaxAmbulances)
+
+        master.remove(master.getConstrs())
         # new constraints
         MaxPeople = {p: master.addConstr(
-            quicksum(get_people(schedules[s])[p] * lambda_s[s]
-                     for s in S) <= n[p])
+            quicksum(get_people(s)[p] * lambda_s[s]
+                     for s in lambda_s) <= n[p])
             for p in P}
         ResourceCapacity = {h: master.addConstr(
-                            quicksum(get_resources_used(schedules[s])[h] * lambda_s[s] for s in S) <= c[h])
-                            for h in H}
-        MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in S) <= n_a)
-    
+            quicksum(get_resources_used(s)[h] * lambda_s[s]
+                     for s in lambda_s) <= c[h])
+            for h in H}
+        MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in lambda_s) <= n_a)
+
         # new objective
-        master.setObjective(quicksum(get_gs(schedules[s]) * lambda_s[s] for s in S), GRB.MAXIMIZE)
+        master.setObjective(quicksum(get_gs(s) * lambda_s[s] for s in lambda_s), GRB.MAXIMIZE)
         master.optimize()
-        for s in S:
-            print(str(schedules[s])+" Lambda: "+str(lambda_s[s].x))
-
-
-
-def is_integer(num):
-    return abs(num % 1 - 0.5) > 0.5 - EPSILON
+    print('Solutions found', found)
 
 def solve_RIP():
-    for s in S:
+    for s in lambda_s:
         lambda_s[s].vType = GRB.INTEGER
     master.optimize()
 
-##############################################################################
-#           START
-##############################################################################
-
-node_stack = []
-
-solve_RMP()
-solve_RIP()
-
-BF4EVA = master.objVal
-
-for s in S:
-    lambda_s[s].vType = GRB.CONTINUOUS
-    
-
-node_stack.append([[], schedules])
 ###############################################################################
 #       Branch and Price to get Integer Solution
 ###############################################################################
+def is_integer(num):
+    return abs(num % 1 - 0.5) > 0.5 - EPSILON
 
 def continue_branching():
-    
-    if any(not(is_integer(s)) for s in lambda_s):
+    global bestSoFar
+
+    if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
         return True
-    if master.objVal < BF4EVA:
-        BF4EVA = master.objVal
-        print('*******New Incumbent Solution', BF4EVA)
+    if master.objVal < bestSoFar:
+        bestSoFar = master.objVal
+        print('*******New Incumbent Solution', bestSoFar)
     return False
 
 def solve_node(node):
-    #get parent's schedules for lambda_s variables
-    global schedules
-    schedules = node[1]
-
     #get all theta_q_j and alpha_j from parent -> add branch constraints
 
     #TODO Figure out how the fuck changing constraints works
@@ -338,36 +297,142 @@ def solve_node(node):
     master.remove(master.getConstrs())
     BranchConstraints.clear()
 
-    for q, alpha, upper in node[0]:
-        if upper:
-            BranchConstraints[]
-        else:
+    # print('NODEY BOI')
+    # pprint(node)
 
+    for theta, alpha, q, upper in node:
+        if upper:
+            BranchConstraints[(theta, alpha, q)] = master.addConstr(quicksum(
+                lambda_s[s]
+                for s in theta
+            ) >= alpha)
+        else:
+            BranchConstraints[(theta, alpha, q)] = master.addConstr(quicksum(
+                lambda_s[s]
+                for s in theta
+            ) <= alpha)
 
     solve_RMP()
 
-def determine_new_alpha_j_new_q():
-    pass
+def determine_node_data(schedule_set):
 
-while True:
-    
+    # calculate set of non-integer lambdas
+    fractional_schedules = tuple(s for s in schedule_set if not is_integer(lambda_s[s].x))
+    fractional_costs = [schedule_resources[s] for s in fractional_schedules]
+
+    # loop through em, looking for first undominated schedule
+    undominated = 0
+    checking = 1
+    while checking < len(fractional_costs):
+        if is_dominated(fractional_costs[checking], 0, fractional_costs[undominated], 0):
+            undominated = checking
+        checking += 1
+
+    q = fractional_costs[undominated]
+
+    costs = [schedule_resources[s] for s in schedule_set]
+
+    theta = tuple(schedule_set[i]
+                  for i in range(len(schedule_set))
+                  if exceeds_threshold(costs[i], q))
+
+    alpha = sum(lambda_s[s].x for s in theta)
+
+    return theta, alpha, q
+
+######################################################################
+#              START
+######################################################################
+
+#TODO Delete this
+for i in range(3):
+    print()
+
+# schedules = all_schedules([], c, n_i, n_d)
+schedules = [((0, 0),)]
+
+for s in schedules:
+    schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
+
+master = Model('Master Problem')
+master.setParam('OutputFlag', 0)
+
+# Variables
+lambda_s = {s: master.addVar()  # vtype=GRB.BINARY
+            for s in schedules}
+
+# Objective
+master.setObjective(quicksum(get_gs(s) * lambda_s[s] for s in lambda_s), GRB.MAXIMIZE)
+
+# Constraints
+MaxPeople = {p: master.addConstr(
+    quicksum(get_people(s)[p] * lambda_s[s]
+             for s in lambda_s) <= n[p])
+    for p in P}
+ResourceCapacity = {h: master.addConstr(
+    quicksum(get_resources_used(s)[h] * lambda_s[s]
+             for s in lambda_s) <= c[h])
+    for h in H}
+MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in lambda_s) <= n_a)
+
+BranchConstraints = {}
+
+# for s in lambda_s:
+#     if lambda_s[s].x==1:
+#         print(schedules[s])
+#         print(get_gs(schedules[s]))
+master.optimize()
+
+
+# to prevent gutter trash first incumbent solution
+solve_RMP()
+
+solve_RIP()
+
+bestSoFar = master.objVal
+
+for s in lambda_s:
+    lambda_s[s].vType = GRB.CONTINUOUS
+
+master.optimize()
+solve_RMP()
+
+node_stack = []
+node = [] #TODO
+nodes_explored = 1
+
+test = 1
+while test < 3:
+    test += 1
     if continue_branching():
-        alpha, q = determine_new_alpha_j_new_q_new_Theta_q_j()
+        theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
+
+        # add on the new tuple to the new branches
+        node_true = node + [(theta_q_j, floor(alpha_j), q_j, True)]
+        node_false = node + [(theta_q_j, floor(alpha_j), q_j, False)]
+
+        node_stack.append(node_true)
+        node_stack.append(node_false)
 
 
-
-        node_stack.append([q_j_and_a_js_and_high_low, deepcopy(schedules), True])
-        node_stack.append([q_j_and_a_js_and_high_low, deepcopy(schedules), False])
-    
     try:
-        Theta_q_j_and_a_js_and_high_low, schedules = CurrNode = node_stack.pop()
+        node = node_stack.pop()
+        nodes_explored += 1
+        print('picked new node')
     except IndexError:
         break
-    
-    solve_node(CurrNode)
-    
-    
+
+    print('STACK LENGTH', len(node_stack))
+    pprint(node_stack)
+    print('SOLVING NODE')
+    pprint(node)
+    solve_node(node)
+
 #el donzoes
-print('We did it friends!', master)
+# for s in lambda_s:
+#     print(str(s) + " Lambda: " + str(lambda_s[s].x))
+
+print('We did it friends!')
+print(f'Explored {nodes_explored} nodes')
 
 

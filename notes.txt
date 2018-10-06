@@ -1,3 +1,7 @@
+TODO:
+    1. Fix constraint recreating stuff that is probably slow as balls
+
+
 1. Master problem -> test
     -class stuff up correctly
     -generate variables in correct structure
