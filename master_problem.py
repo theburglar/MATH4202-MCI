@@ -67,9 +67,9 @@ def get_resources_used(schedule):
     b_h = [0 for h in range(len(c))]
     for p, h in schedule:
          b_h[h] += w_i if p == I else w_d
-    return b_h    
-    
-    
+    return b_h
+
+
 def get_people(schedule):
     a = [0, 0]
     for p, h in schedule:
@@ -80,13 +80,13 @@ def get_gs(schedule):
     p_i,h_i = schedule[0]
     t = times[h_i]
     g = f_p(t, p_i)
-    
+
     for i in range(1, len(schedule)):
         p_j,h_j = schedule[i]
-        
+
         t += times[h_i] + times[h_j]
         g += f_p(t,p_j)
-        
+
         p_i,h_i = p_j,h_j
     return g
 
@@ -99,20 +99,20 @@ def exceeds_threshold(w, q):
 
 # TODO: Make T T_j, etc. 
 def F(W_, R, i, j, T, s):
-    
+
     W_ = list(W_)
     # previous trip
     p_i, h_i = vertices[i] if i != START_NODE else (0, 0)
-    
+
     # current vertex
-    p_j, h_j = vertices[j] 
-    
+    p_j, h_j = vertices[j]
+
     if i==START_NODE:
         T = times[h_j]
     elif j != FINAL_NODE:
         T += times[h_i] + times[h_j]
-           
-    if j==FINAL_NODE: 
+
+    if j==FINAL_NODE:
         sigma = MaxAmbulances.pi
         R_j = R-sigma
 
@@ -125,18 +125,18 @@ def F(W_, R, i, j, T, s):
                 print('R_j', R_j)
 
         return tuple(W_), R_j, T
-        
+
     else:
-        
+
         W_[p_j] = W_[p_j] + 1
         W_[h_j + 2] = W_[h_j + 2] + w[p_j]
-        
+
         # dual variables
         pi = MaxPeople[p_j].pi
         rho = ResourceCapacity[h_j].pi
-        
+
        # print('IT\s TIME!', pi, rho, sigma)
-        R_j = R + f_p(T, p_j) - pi - w[p_j]*rho 
+        R_j = R + f_p(T, p_j) - pi - w[p_j]*rho
         return tuple(W_), R_j, T
 
 def is_dominated(W, R, W_, R_):
@@ -189,7 +189,7 @@ def subproblem():
         #Step 1
         i, W_i, R_i, T_i, s = L.pop(0)
         # pprint(len(L))
-        
+
         if i == len(V):
             # node v_f
             continue
@@ -202,7 +202,7 @@ def subproblem():
                     if R_j > EPSILON:
                         if j != FINAL_NODE:
                             s_j = s + (vertices[j],)
-                        else: 
+                        else:
                             s_j = s
 
                         # update the global dictionary of schedule costs
@@ -216,7 +216,8 @@ def subproblem():
     # Good boi labels
    # pprint(E[FINAL_NODE])
 
-    return max(E[FINAL_NODE], default=None, key=lambda x: x[2])
+    # return max(E[FINAL_NODE], default=None, key=lambda x: x[2])
+    return [label[-1] for label in E[FINAL_NODE]]
 
 def solve_RMP():
     global MaxPeople
@@ -231,25 +232,25 @@ def solve_RMP():
         for s in lambda_s:
             print(str(s) + " Lambda: " + str(lambda_s[s].x))
 
-        solution = subproblem()
+        # solutions is the list of new schedules
+        solutions = subproblem()
 
-        if solution is None:
+        if len(solutions) == 0:
             break
-        found += 1
+        found += len(solutions)
 
         print('#' * 80)
-        pprint(solution)
-        ls = solution[-1]
-        print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
-              sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
-              MaxAmbulances.pi)
+        pprint(solutions)
+        # print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
+        #       sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
+        #       MaxAmbulances.pi)
         # pprint(schedules)
-    
-        # paranoia
-        if ls in lambda_s:
-            raise ValueError("DUPLICATE VARIABLE:", ls)
 
-        lambda_s[ls] = master.addVar()
+        # paranoia
+        for ls in solutions:
+            if ls in lambda_s:
+                raise ValueError("DUPLICATE VARIABLE:", ls)
+            lambda_s[ls] = master.addVar()
 
         #TODO Change this business to not delete all constraints
         for key in MaxPeople:
