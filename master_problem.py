@@ -10,12 +10,12 @@ from gurobipy import *
 from pprint import pprint
 from math import ceil, floor
 
-n_i = 7
-n_d = 7
+n_i = 5
+n_d = 5
 n_a = 6
 w_i = 3
 w_d = 1
-c = [13 for i in range(3)]
+c = [10 for i in range(3)]
 times = [5, 5, 10]
 H = range(len(c))
 
@@ -227,6 +227,7 @@ def solve_RMP():
 
     while True:
 
+        #print(lambda_s)
         for s in lambda_s:
             print(str(s) + " Lambda: " + str(lambda_s[s].x))
 
@@ -270,13 +271,14 @@ def solve_RMP():
 
         # new objective
         master.setObjective(quicksum(get_gs(s) * lambda_s[s] for s in lambda_s), GRB.MAXIMIZE)
-        master.optimize()
+        master.optimize(); print('**********1')
+
     print('Solutions found', found)
 
 def solve_RIP():
     for s in lambda_s:
         lambda_s[s].vType = GRB.INTEGER
-    master.optimize()
+    master.optimize(); print('**********2')
 
 ###############################################################################
 #       Branch and Price to get Integer Solution
@@ -321,8 +323,13 @@ def solve_node(node):
                 for s in theta
             ) <= alpha)
 
-    master.optimize()
+    master.optimize(); print('**********3')
+    status = master.status
+    if status == GRB.Status.INFEASIBLE or GRB.Status.INF_OR_UNBD:
+        print('INFEASIBLE')
+        return False
     solve_RMP()
+    return True
 
 def determine_node_data(schedule_set):
 
@@ -368,7 +375,7 @@ for s in schedules:
     schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
 
 master = Model('Master Problem')
-master.setParam('OutputFlag', 0)
+# master.setParam('OutputFlag', 0)
 
 # Variables
 lambda_s = {s: master.addVar()  # vtype=GRB.BINARY
@@ -394,7 +401,7 @@ BranchConstraints = {}
 #     if lambda_s[s].x==1:
 #         print(schedules[s])
 #         print(get_gs(schedules[s]))
-master.optimize()
+master.optimize(); print('**********4')
 
 
 # to prevent gutter trash first incumbent solution
@@ -408,19 +415,19 @@ print('First RIP Solution', bestSoFar)
 for s in lambda_s:
     lambda_s[s].vType = GRB.CONTINUOUS
 
-master.optimize()
+master.optimize(); print('**********5')
 solve_RMP()
 
 node_stack = []
 node = [] #TODO
 nodes_explored = 1
-
+feasible = True
 
 while True:
 # test = 1
 # while test < 10:
 #     test += 1
-    if continue_branching():
+    if feasible and continue_branching():
         theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
 
         # add on the new tuple to the new branches
@@ -443,7 +450,7 @@ while True:
     print('SOLVING NODE')
     pprint(node)
     try:
-        solve_node(node)
+        feasible = solve_node(node)
     except ValueError as e:
         print('ERROR:', e)
         print('EXITING...')
