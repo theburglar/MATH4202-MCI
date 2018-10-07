@@ -288,6 +288,7 @@ def is_integer(num):
 
 def continue_branching():
     global bestSoFar
+    global bestSolution
     # APPROXIMATION PRUNE
     # if master.objVal < bestSoFar * CLOSE_ENOUGH:
     #     print('Node pruned by approximation')
@@ -298,6 +299,12 @@ def continue_branching():
     if master.objVal > bestSoFar:
         bestSoFar = master.objVal
         print('*******New Incumbent Solution', bestSoFar)
+
+        bestSolution = {}
+        for s in lambda_s:
+            if lambda_s[s].x > EPSILON:
+                bestSolution[s] = lambda_s[s].x
+
     return False
 
 def solve_node(node):
@@ -411,6 +418,12 @@ solve_RIP()
 
 bestSoFar = master.objVal
 print('First RIP Solution', bestSoFar)
+bestSolution = {}
+for s in lambda_s:
+    print('LAMBDA:', s, lambda_s[s].x)
+    if lambda_s[s].x > EPSILON:
+        bestSolution[s] = lambda_s[s].x
+print('BEST SOLUTION', bestSolution)
 
 for s in lambda_s:
     lambda_s[s].vType = GRB.CONTINUOUS
@@ -461,10 +474,9 @@ while True:
 #     print(str(s) + " Lambda: " + str(lambda_s[s].x))
 
 print('Schedules selected:')
-for s in lambda_s:
-    if lambda_s[s].x > EPSILON:
-        print(f'{lambda_s[s].x} lot(s) of', s)
-
+for s in bestSolution:
+    print(f'{bestSolution[s]} lot(s) of', s)
+print('Optimal Value Determined:', bestSoFar)
 
 print(f'Explored {nodes_explored} nodes')
 
