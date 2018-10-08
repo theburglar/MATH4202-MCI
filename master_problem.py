@@ -510,4 +510,8 @@ for test_case in TEST_CASES:
 
     print(f'Explored {nodes_explored} nodes')
 
+    with open('test_results/' + test_case, 'w') as test_result:
+        for s in bestSolution:
+            test_result.write(f'{bestSolution[s]} lot(s) of {s}\n')
+        test_result.write(f'Optimal Value Determined: {bestSoFar}')
 
