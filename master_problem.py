@@ -343,7 +343,7 @@ def solve_node(node):
     master.optimize()
     status = master.status
     if status == GRB.Status.INFEASIBLE or GRB.Status.INF_OR_UNBD:
-        # print('INFEASIBLE')
+        print('INFEASIBLE')
         return False
     solve_RMP()
     return True
@@ -402,9 +402,10 @@ def generate_priority_schedules(priority, length):
 #              START
 ######################################################################
 
-
 for test_case in TEST_CASES:
-
+    
+    print(f'Running Test Case {test_case}...')
+    print('-'*50)
     # initialise values from test cases
     with open(f'test_cases/{test_case}.txt') as data:
         n_i = int(data.readline().split('#')[0])
@@ -430,7 +431,7 @@ for test_case in TEST_CASES:
 
     # schedules = all_schedules([], c, n_i, n_d)
     # schedules = [((0, 0),)]
-    schedules = generate_priority_schedules(I, 4)
+    schedules = generate_priority_schedules(I, 5)
 
 
     for s in schedules:
@@ -528,7 +529,7 @@ for test_case in TEST_CASES:
 
     # print('Schedules selected:')
     for s in bestSolution:
-        print(f'{bestSolution[s]} lot(s) of', s)
+        print(f'{round(bestSolution[s], 3)} lot(s) of', s)
     print(f'Successfully ran test case `{test_case}`')
     print('Optimal Value Determined:', bestSoFar)
 
@@ -538,6 +539,7 @@ for test_case in TEST_CASES:
 
     with open(f'test_results/{test_case}_results.txt', 'w') as test_result:
         for s in bestSolution:
-            test_result.write(f'{bestSolution[s]} lot(s) of {s}\n')
+            test_result.write(f'{round(bestSolution[s], 3)} lot(s) of {s}\n')
         test_result.write(f'Optimal Value Determined: {bestSoFar}\n')
+        test_result.write(f'Explored {nodes_explored} nodes')
         test_result.write(f'Time taken: {duration} seconds')
