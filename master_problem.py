@@ -55,7 +55,7 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-TEST_CASES = ['test_case_1']
+TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
 
 ###########################################################################
 
@@ -465,7 +465,6 @@ for test_case in TEST_CASES:
     #         print(get_gs(schedules[s]))
     master.optimize()
 
-
     # to prevent gutter trash first incumbent solution
     solve_RMP()
 
@@ -474,11 +473,9 @@ for test_case in TEST_CASES:
     bestSoFar = master.objVal
     print('First RIP Solution', bestSoFar)
     bestSolution = {}
-    # for s in lambda_s:
-    #     print('LAMBDA:', s, lambda_s[s].x)
-    #     if lambda_s[s].x > EPSILON:
-    #         bestSolution[s] = lambda_s[s].x
-    # print('BEST SOLUTION', bestSolution)
+    for s in lambda_s:
+        if lambda_s[s].x > EPSILON:
+            bestSolution[s] = lambda_s[s].x
 
     for s in lambda_s:
         lambda_s[s].vType = GRB.CONTINUOUS
@@ -530,13 +527,14 @@ for test_case in TEST_CASES:
     duration = time.time() - start_time
 
     # print('Schedules selected:')
-    # for s in bestSolution:
-    #     print(f'{bestSolution[s]} lot(s) of', s)
-    print('#'*50)
+    for s in bestSolution:
+        print(f'{bestSolution[s]} lot(s) of', s)
     print(f'Successfully ran test case `{test_case}`')
     print('Optimal Value Determined:', bestSoFar)
 
     print(f'Explored {nodes_explored} nodes')
+    print(f'Time taken: {duration} seconds')
+    print('#'*50)
 
     with open(f'test_results/{test_case}_results.txt', 'w') as test_result:
         for s in bestSolution:
