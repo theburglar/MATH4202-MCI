@@ -10,20 +10,8 @@ from gurobipy import *
 from pprint import pprint
 from math import ceil, floor
 
-n_i = 5
-n_d = 5
-n_a = 6
-w_i = 3
-w_d = 1
-c = [10 for i in range(3)]
-times = [5, 5, 10]
-H = range(len(c))
-
 I = 0
 D = 1
-n = [n_i, n_d]
-P = [I, D]
-w = [w_i, w_d]
 
 PES = 0
 MOD = 1
@@ -43,12 +31,31 @@ FINAL_PATIENT = 0
 FINAL_HOSPITAL = 0
 FINAL_NODE = None
 
-vertices = [(p,h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
-V = range(len(vertices))
-FINAL_NODE = len(V) - 1
-
 EPSILON = 10**-7
 CLOSE_ENOUGH = 1.005
+
+# n_i = 5
+# n_d = 5
+# n_a = 6
+# w_i = 3
+# w_d = 1
+# c = [10 for i in range(3)]
+# times = [5, 5, 10]
+# H = range(len(c))
+#
+# n = [n_i, n_d]
+# P = [I, D]
+# w = [w_i, w_d]
+#
+# vertices = [(p,h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
+# V = range(len(vertices))
+# FINAL_NODE = len(V) - 1
+
+###########################################################################
+
+TEST_CASES = ['test_case_1.txt']
+
+###########################################################################
 
 #global map storing the resource cost of any given schedule
 # schedule_tuple -> W
@@ -60,7 +67,7 @@ def f_p(t, p):
     :param p: type of patient (I: immediate, D: delayed)
     :return:
     """
-    b_0, b_1, b_2 = SURVIVAL_RATES[PES][I] if p == I else SURVIVAL_RATES[PES][D]
+    b_0, b_1, b_2 = SURVIVAL_RATES[SCENARIO][I] if p == I else SURVIVAL_RATES[SCENARIO][D]
     return b_0 / (((t / b_1) ** b_2) + 1)
 
 def get_resources_used(schedule):
@@ -372,113 +379,135 @@ def generate_priority_schedules():
 #              START
 ######################################################################
 
-#TODO Delete this
-for i in range(3):
-    print()
 
-# schedules = all_schedules([], c, n_i, n_d)
-schedules = [((0, 0),)]
+for test_case in TEST_CASES:
 
-for s in schedules:
-    schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
+    # initialise values from test cases
+    with open('test_cases/' + test_case) as data:
+        n_i = int(data.readline().split('#')[0])
+        n_d = int(data.readline().split('#')[0])
+        n_a = int(data.readline().split('#')[0])
+        w_i = int(data.readline().split('#')[0])
+        w_d = int(data.readline().split('#')[0])
+        c = [int(h) for h in data.readline().split('#')[0].split(',')]
+        times = [int(t) for t in data.readline().split('#')[0].split(',')]
+        SCENARIO = int(data.readline().split('#')[0])
 
-master = Model('Master Problem')
-# master.setParam('OutputFlag', 0)
+    print(n_i, n_d, n_a, w_i, w_d, c, times, SCENARIO)
 
-# Variables
-lambda_s = {s: master.addVar()  # vtype=GRB.BINARY
-            for s in schedules}
+    H = range(len(c))
 
-# Objective
-master.setObjective(quicksum(get_gs(s) * lambda_s[s] for s in lambda_s), GRB.MAXIMIZE)
+    n = [n_i, n_d]
+    P = [I, D]
+    w = [w_i, w_d]
 
-# Constraints
-MaxPeople = {p: master.addConstr(
-    quicksum(get_people(s)[p] * lambda_s[s]
-             for s in lambda_s) <= n[p])
-    for p in P}
-ResourceCapacity = {h: master.addConstr(
-    quicksum(get_resources_used(s)[h] * lambda_s[s]
-             for s in lambda_s) <= c[h])
-    for h in H}
-MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in lambda_s) <= n_a)
+    vertices = [(p, h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
+    V = range(len(vertices))
+    FINAL_NODE = len(V) - 1
 
-BranchConstraints = {}
+    # schedules = all_schedules([], c, n_i, n_d)
+    schedules = [((0, 0),)]
 
-# for s in lambda_s:
-#     if lambda_s[s].x==1:
-#         print(schedules[s])
-#         print(get_gs(schedules[s]))
-master.optimize(); print('**********4')
+    for s in schedules:
+        schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
 
+    master = Model('Master Problem')
+    # master.setParam('OutputFlag', 0)
 
-# to prevent gutter trash first incumbent solution
-solve_RMP()
+    # Variables
+    lambda_s = {s: master.addVar()  # vtype=GRB.BINARY
+                for s in schedules}
 
-solve_RIP()
+    # Objective
+    master.setObjective(quicksum(get_gs(s) * lambda_s[s] for s in lambda_s), GRB.MAXIMIZE)
 
-bestSoFar = master.objVal
-print('First RIP Solution', bestSoFar)
-bestSolution = {}
-for s in lambda_s:
-    print('LAMBDA:', s, lambda_s[s].x)
-    if lambda_s[s].x > EPSILON:
-        bestSolution[s] = lambda_s[s].x
-print('BEST SOLUTION', bestSolution)
+    # Constraints
+    MaxPeople = {p: master.addConstr(
+        quicksum(get_people(s)[p] * lambda_s[s]
+                 for s in lambda_s) <= n[p])
+        for p in P}
+    ResourceCapacity = {h: master.addConstr(
+        quicksum(get_resources_used(s)[h] * lambda_s[s]
+                 for s in lambda_s) <= c[h])
+        for h in H}
+    MaxAmbulances = master.addConstr(quicksum(lambda_s[s] for s in lambda_s) <= n_a)
 
-for s in lambda_s:
-    lambda_s[s].vType = GRB.CONTINUOUS
+    BranchConstraints = {}
 
-master.optimize(); print('**********5')
-solve_RMP()
-
-node_stack = []
-node = [] #TODO
-nodes_explored = 1
-feasible = True
-
-while True:
-# test = 1
-# while test < 10:
-#     test += 1
-    if feasible and continue_branching():
-        theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
-
-        # add on the new tuple to the new branches
-        node_true = node + [(theta_q_j, ceil(alpha_j), q_j, True)]
-        node_false = node + [(theta_q_j, floor(alpha_j), q_j, False)]
-
-        node_stack.append(node_true)
-        node_stack.append(node_false)
+    # for s in lambda_s:
+    #     if lambda_s[s].x==1:
+    #         print(schedules[s])
+    #         print(get_gs(schedules[s]))
+    master.optimize(); print('**********4')
 
 
-    try:
-        node = node_stack.pop()
-        nodes_explored += 1
-        print('picked new node')
-    except IndexError:
-        break
+    # to prevent gutter trash first incumbent solution
+    solve_RMP()
 
-    print('STACK LENGTH', len(node_stack))
-    pprint(node_stack)
-    print('SOLVING NODE')
-    pprint(node)
-    try:
-        feasible = solve_node(node)
-    except ValueError as e:
-        print('ERROR:', e)
-        print('EXITING...')
-        break
+    solve_RIP()
 
-#el donzoes
-# for s in lambda_s:
-#     print(str(s) + " Lambda: " + str(lambda_s[s].x))
+    bestSoFar = master.objVal
+    print('First RIP Solution', bestSoFar)
+    bestSolution = {}
+    for s in lambda_s:
+        print('LAMBDA:', s, lambda_s[s].x)
+        if lambda_s[s].x > EPSILON:
+            bestSolution[s] = lambda_s[s].x
+    print('BEST SOLUTION', bestSolution)
 
-print('Schedules selected:')
-for s in bestSolution:
-    print(f'{bestSolution[s]} lot(s) of', s)
-print('Optimal Value Determined:', bestSoFar)
+    for s in lambda_s:
+        lambda_s[s].vType = GRB.CONTINUOUS
 
-print(f'Explored {nodes_explored} nodes')
+    master.optimize(); print('**********5')
+    solve_RMP()
+
+    node_stack = []
+    node = [] #TODO
+    nodes_explored = 1
+    feasible = True
+
+    while True:
+    # test = 1
+    # while test < 10:
+    #     test += 1
+        if feasible and continue_branching():
+            theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
+
+            # add on the new tuple to the new branches
+            node_true = node + [(theta_q_j, ceil(alpha_j), q_j, True)]
+            node_false = node + [(theta_q_j, floor(alpha_j), q_j, False)]
+
+            node_stack.append(node_true)
+            node_stack.append(node_false)
+
+
+        try:
+            node = node_stack.pop()
+            nodes_explored += 1
+            print('picked new node')
+        except IndexError:
+            break
+
+        print('STACK LENGTH', len(node_stack))
+        pprint(node_stack)
+        print('SOLVING NODE')
+        pprint(node)
+        try:
+            feasible = solve_node(node)
+        except ValueError as e:
+            print('ERROR:', e)
+            print('EXITING...')
+            break
+
+    #el donzoes
+    # for s in lambda_s:
+    #     print(str(s) + " Lambda: " + str(lambda_s[s].x))
+
+    print('Schedules selected:')
+    for s in bestSolution:
+        print(f'{bestSolution[s]} lot(s) of', s)
+    print('Optimal Value Determined:', bestSoFar)
+
+    print(f'Explored {nodes_explored} nodes')
 
 

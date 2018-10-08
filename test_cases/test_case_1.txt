@@ -1,0 +1,8 @@
+5 #n_i
+5 #n_d
+6 #n_a
+3 #w_i
+1 #w_d
+10,10,10 #hospitals
+5,5,10 #times
+0 #scenario
