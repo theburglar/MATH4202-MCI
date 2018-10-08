@@ -6,6 +6,8 @@ Created on Wed Oct  3 11:59:40 2018
 """
 
 import random
+import time
+
 from gurobipy import *
 from pprint import pprint
 from math import ceil, floor
@@ -53,7 +55,7 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-TEST_CASES = ['test_case_1.txt']
+TEST_CASES = ['test_case_1']
 
 ###########################################################################
 
@@ -383,7 +385,7 @@ def generate_priority_schedules():
 for test_case in TEST_CASES:
 
     # initialise values from test cases
-    with open('test_cases/' + test_case) as data:
+    with open(f'test_cases/{test_case}.txt') as data:
         n_i = int(data.readline().split('#')[0])
         n_d = int(data.readline().split('#')[0])
         n_a = int(data.readline().split('#')[0])
@@ -404,6 +406,8 @@ for test_case in TEST_CASES:
     vertices = [(p, h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
     V = range(len(vertices))
     FINAL_NODE = len(V) - 1
+
+    start_time = time.time()
 
     # schedules = all_schedules([], c, n_i, n_d)
     schedules = [((0, 0),)]
@@ -480,7 +484,6 @@ for test_case in TEST_CASES:
             node_stack.append(node_true)
             node_stack.append(node_false)
 
-
         try:
             node = node_stack.pop()
             nodes_explored += 1
@@ -503,6 +506,8 @@ for test_case in TEST_CASES:
     # for s in lambda_s:
     #     print(str(s) + " Lambda: " + str(lambda_s[s].x))
 
+    duration = time.time() - start_time
+
     print('Schedules selected:')
     for s in bestSolution:
         print(f'{bestSolution[s]} lot(s) of', s)
@@ -510,4 +515,8 @@ for test_case in TEST_CASES:
 
     print(f'Explored {nodes_explored} nodes')
 
-
+    with open(f'test_results/{test_case}_results.txt', 'w') as test_result:
+        for s in bestSolution:
+            test_result.write(f'{bestSolution[s]} lot(s) of {s}\n')
+        test_result.write(f'Optimal Value Determined: {bestSoFar}\n')
+        test_result.write(f'Time taken: {duration} seconds')
