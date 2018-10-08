@@ -33,7 +33,7 @@ FINAL_PATIENT = 0
 FINAL_HOSPITAL = 0
 FINAL_NODE = None
 
-EPSILON = 10**-7
+EPSILON = 10**-5
 CLOSE_ENOUGH = 1.005
 
 # n_i = 5
@@ -55,7 +55,8 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+# TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+TEST_CASES = ['_test']
 
 ###########################################################################
 
@@ -328,6 +329,15 @@ def solve_node(node):
         master.remove(BranchConstraints[key])
     BranchConstraints.clear()
 
+    # check for duplicate branch constraints
+    for i in range(len(node)):
+        for j in range(i+1, len(node)):
+            if node[i] == node[j]:
+                pprint(node[i])
+                print('DUPLICATE BRANCH', i, j)
+                print(len(node))
+                raise ValueError('DUPLICATE BRANCH')
+
     for theta, alpha, q, upper in node:
         if upper:
             BranchConstraints[(theta, alpha, q)] = master.addConstr(quicksum(
@@ -339,10 +349,14 @@ def solve_node(node):
                 lambda_s[s]
                 for s in theta
             ) <= alpha)
+        print(f'Branch constraint: {upper}, {alpha}, {len(theta)}')
+        pprint(theta)
 
     master.optimize()
+    for c in master.getConstrs():
+        print('CONSTRAINT:', c)
     status = master.status
-    if status == GRB.Status.INFEASIBLE or GRB.Status.INF_OR_UNBD:
+    if status == GRB.Status.INFEASIBLE or status == GRB.Status.INF_OR_UNBD:
         print('INFEASIBLE')
         return False
     solve_RMP()
@@ -369,6 +383,16 @@ def determine_node_data(schedule_set):
     theta = tuple(schedule_set[i]
                   for i in range(len(schedule_set))
                   if exceeds_threshold(costs[i], q))
+    check = 0
+    for i in range(len(schedule_set)):
+        x = exceeds_threshold(costs[i], q)
+        print(f'{i} EXCEEDS: {costs[i]} {q} {x}')
+        if x:
+            check += 1
+    print(len(theta))
+    print(check)
+    # pprint(fractional_costs)
+    # print(fractional_costs[undominated])
 
     alpha = sum(lambda_s[s].x for s in theta)
 
@@ -403,7 +427,7 @@ def generate_priority_schedules(priority, length):
 ######################################################################
 
 for test_case in TEST_CASES:
-    
+
     print(f'Running Test Case {test_case}...')
     print('-'*50)
     # initialise values from test cases
@@ -438,7 +462,7 @@ for test_case in TEST_CASES:
         schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
 
     master = Model('Master Problem')
-    master.setParam('OutputFlag', 0)
+    master.setParam('OutputFlag', 1)
 
     # Variables
     lambda_s = {s: master.addVar()  # vtype=GRB.BINARY
@@ -517,8 +541,10 @@ for test_case in TEST_CASES:
         try:
             feasible = solve_node(node)
         except ValueError as e:
+            print('!' * 70)
             print('ERROR:', e)
             print('EXITING...')
+            print('!' * 70)
             break
 
     #el donzoes
