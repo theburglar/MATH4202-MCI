@@ -238,8 +238,8 @@ def solve_RMP():
     while True:
 
         #print(lambda_s)
-        for s in lambda_s:
-            print(str(s) + " Lambda: " + str(lambda_s[s].x))
+        # for s in lambda_s:
+        #     print(str(s) + " Lambda: " + str(lambda_s[s].x))
 
         # solutions is the list of new schedules
         solutions = subproblem()
@@ -248,8 +248,8 @@ def solve_RMP():
             break
         found += len(solutions)
 
-        print('#' * 80)
-        pprint(solutions)
+        # print('#' * 80)
+        # pprint(solutions)
         # print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
         #       sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
         #       MaxAmbulances.pi)
@@ -281,14 +281,14 @@ def solve_RMP():
 
         # new objective
         master.setObjective(quicksum(get_gs(s) * lambda_s[s] for s in lambda_s), GRB.MAXIMIZE)
-        master.optimize(); print('**********1')
+        master.optimize()
 
-    print('Solutions found', found)
+    # print('Solutions found', found)
 
 def solve_RIP():
     for s in lambda_s:
         lambda_s[s].vType = GRB.INTEGER
-    master.optimize(); print('**********2')
+    master.optimize()
 
 ###############################################################################
 #       Branch and Price to get Integer Solution
@@ -340,10 +340,10 @@ def solve_node(node):
                 for s in theta
             ) <= alpha)
 
-    master.optimize(); print('**********3')
+    master.optimize()
     status = master.status
     if status == GRB.Status.INFEASIBLE or GRB.Status.INF_OR_UNBD:
-        print('INFEASIBLE')
+        # print('INFEASIBLE')
         return False
     solve_RMP()
     return True
@@ -374,8 +374,29 @@ def determine_node_data(schedule_set):
 
     return theta, alpha, q
 
-def generate_priority_schedules():
-    pass
+# Schedule Generation
+def add_one_trip(schedules, priority):
+    next_schedules = []
+    for s in schedules:
+        for h in H:
+            next_schedules.append(s + ((priority, h),))
+    return next_schedules
+
+def generate_priority_schedules(priority, length):
+    schedules = [((priority, h),) for h in H]
+
+    next_layer = schedules[:]
+    for i in range(length):
+        next_layer = add_one_trip(next_layer, priority)
+        schedules.extend(next_layer)
+
+    opposite = (priority + 1) % 2
+    for s in schedules[:]:
+        if len(s) < length:
+            schedules.extend([s + x for x in generate_priority_schedules(opposite, length - len(s) - 1)])
+
+    return schedules
+
 
 ######################################################################
 #              START
@@ -395,8 +416,6 @@ for test_case in TEST_CASES:
         times = [int(t) for t in data.readline().split('#')[0].split(',')]
         SCENARIO = int(data.readline().split('#')[0])
 
-    print(n_i, n_d, n_a, w_i, w_d, c, times, SCENARIO)
-
     H = range(len(c))
 
     n = [n_i, n_d]
@@ -410,13 +429,15 @@ for test_case in TEST_CASES:
     start_time = time.time()
 
     # schedules = all_schedules([], c, n_i, n_d)
-    schedules = [((0, 0),)]
+    # schedules = [((0, 0),)]
+    schedules = generate_priority_schedules(I, 4)
+
 
     for s in schedules:
         schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
 
     master = Model('Master Problem')
-    # master.setParam('OutputFlag', 0)
+    master.setParam('OutputFlag', 0)
 
     # Variables
     lambda_s = {s: master.addVar()  # vtype=GRB.BINARY
@@ -442,7 +463,7 @@ for test_case in TEST_CASES:
     #     if lambda_s[s].x==1:
     #         print(schedules[s])
     #         print(get_gs(schedules[s]))
-    master.optimize(); print('**********4')
+    master.optimize()
 
 
     # to prevent gutter trash first incumbent solution
@@ -453,16 +474,16 @@ for test_case in TEST_CASES:
     bestSoFar = master.objVal
     print('First RIP Solution', bestSoFar)
     bestSolution = {}
-    for s in lambda_s:
-        print('LAMBDA:', s, lambda_s[s].x)
-        if lambda_s[s].x > EPSILON:
-            bestSolution[s] = lambda_s[s].x
-    print('BEST SOLUTION', bestSolution)
+    # for s in lambda_s:
+    #     print('LAMBDA:', s, lambda_s[s].x)
+    #     if lambda_s[s].x > EPSILON:
+    #         bestSolution[s] = lambda_s[s].x
+    # print('BEST SOLUTION', bestSolution)
 
     for s in lambda_s:
         lambda_s[s].vType = GRB.CONTINUOUS
 
-    master.optimize(); print('**********5')
+    master.optimize()
     solve_RMP()
 
     node_stack = []
@@ -487,14 +508,14 @@ for test_case in TEST_CASES:
         try:
             node = node_stack.pop()
             nodes_explored += 1
-            print('picked new node')
+            # print('picked new node')
         except IndexError:
             break
 
-        print('STACK LENGTH', len(node_stack))
-        pprint(node_stack)
-        print('SOLVING NODE')
-        pprint(node)
+        # print('STACK LENGTH', len(node_stack))
+        # pprint(node_stack)
+        # print('SOLVING NODE')
+        # pprint(node)
         try:
             feasible = solve_node(node)
         except ValueError as e:
@@ -508,9 +529,11 @@ for test_case in TEST_CASES:
 
     duration = time.time() - start_time
 
-    print('Schedules selected:')
-    for s in bestSolution:
-        print(f'{bestSolution[s]} lot(s) of', s)
+    # print('Schedules selected:')
+    # for s in bestSolution:
+    #     print(f'{bestSolution[s]} lot(s) of', s)
+    print('#'*50)
+    print(f'Successfully ran test case `{test_case}`')
     print('Optimal Value Determined:', bestSoFar)
 
     print(f'Explored {nodes_explored} nodes')
