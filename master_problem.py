@@ -128,10 +128,10 @@ def F(W_, R, i, j, T, s):
 
         # Check for branching constraint stuff here
         # Adjust reduced cost if so
-        for theta, alpha, q in BranchConstraints:
+        for theta, alpha, q, upper in BranchConstraints:
             if s in theta and exceeds_threshold(W_, q):
                 print('Stuff is happening')
-                R_j -= BranchConstraints[(theta, alpha, q)].pi
+                R_j -= BranchConstraints[(theta, alpha, q, upper)].pi
                 print('R_j', R_j)
 
         return tuple(W_), R_j, T
@@ -318,41 +318,42 @@ def continue_branching():
 
     return False
 
-def solve_node(node):
-
-    global BranchConstraints
-
-    #TODO Figure out how the fuck changing constraints works
-    # remove all constraints
-
-    for key in BranchConstraints:
-        master.remove(BranchConstraints[key])
-    BranchConstraints.clear()
+def set_branch_constraints(node):
 
     # check for duplicate branch constraints
     for i in range(len(node)):
-        for j in range(i+1, len(node)):
+        for j in range(i + 1, len(node)):
             if node[i] == node[j]:
                 pprint(node[i])
                 print('DUPLICATE BRANCH', i, j)
                 print(len(node))
-                raise ValueError('DUPLICATE BRANCH')
+                xxxxxx
+
+    # TODO Figure out how the fuck changing constraints works
+    # remove all constraints
+    for key in BranchConstraints:
+        master.remove(BranchConstraints[key])
+    BranchConstraints.clear()
 
     for theta, alpha, q, upper in node:
         if upper:
-            BranchConstraints[(theta, alpha, q)] = master.addConstr(quicksum(
+            BranchConstraints[(theta, alpha, q, upper)] = master.addConstr(quicksum(
                 lambda_s[s]
                 for s in theta
             ) >= alpha)
         else:
-            BranchConstraints[(theta, alpha, q)] = master.addConstr(quicksum(
+            BranchConstraints[(theta, alpha, q, upper)] = master.addConstr(quicksum(
                 lambda_s[s]
                 for s in theta
             ) <= alpha)
         print(f'Branch constraint: {upper}, {alpha}, {len(theta)}')
         pprint(theta)
 
+def solve_node(node):
+
+    set_branch_constraints(node)
     master.optimize()
+
     for c in master.getConstrs():
         print('CONSTRAINT:', c)
     status = master.status
@@ -362,8 +363,18 @@ def solve_node(node):
     solve_RMP()
     return True
 
-def determine_node_data(schedule_set):
+def determine_node_data(schedule_set, parent):
 
+    set_branch_constraints(parent)
+    master.optimize()
+
+    print('Just optimised with:')
+    for c in master.getConstrs():
+        print(c)
+
+    for k in BranchConstraints:
+        print(k)
+    print('='*50)
     # calculate set of non-integer lambdas
     fractional_schedules = tuple(s for s in schedule_set if not is_integer(lambda_s[s].x))
     fractional_costs = [schedule_resources[s] for s in fractional_schedules]
@@ -454,8 +465,8 @@ for test_case in TEST_CASES:
     start_time = time.time()
 
     # schedules = all_schedules([], c, n_i, n_d)
-    # schedules = [((0, 0),)]
-    schedules = generate_priority_schedules(I, 5)
+    schedules = [((0, 0),)]
+    # schedules = generate_priority_schedules(I, 5)
 
 
     for s in schedules:
@@ -465,7 +476,7 @@ for test_case in TEST_CASES:
     master.setParam('OutputFlag', 1)
 
     # Variables
-    lambda_s = {s: master.addVar()  # vtype=GRB.BINARY
+    lambda_s = {s: master.addVar()
                 for s in schedules}
 
     # Objective
@@ -518,7 +529,7 @@ for test_case in TEST_CASES:
     # while test < 10:
     #     test += 1
         if feasible and continue_branching():
-            theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
+            theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()), node)
 
             # add on the new tuple to the new branches
             node_true = node + [(theta_q_j, ceil(alpha_j), q_j, True)]
