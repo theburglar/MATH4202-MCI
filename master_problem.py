@@ -15,6 +15,8 @@ from math import ceil, floor
 I = 0
 D = 1
 
+MAX_NODES = 100
+
 PES = 0
 MOD = 1
 OPT = 2
@@ -56,7 +58,8 @@ CLOSE_ENOUGH = 1.005
 ###########################################################################
 
 # TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
-TEST_CASES = ['_test']
+# TEST_CASES = ['_test']
+TEST_CASES = ['PES_0']
 
 ###########################################################################
 
@@ -284,7 +287,7 @@ def solve_RMP():
         master.setObjective(quicksum(get_gs(s) * lambda_s[s] for s in lambda_s), GRB.MAXIMIZE)
         master.optimize()
 
-    # print('Solutions found', found)
+    print('Solutions found', found)
 
 def solve_RIP():
     for s in lambda_s:
@@ -300,6 +303,7 @@ def is_integer(num):
 def continue_branching():
     global bestSoFar
     global bestSolution
+    global nodes_since_change
     # APPROXIMATION PRUNE
     # if master.objVal < bestSoFar * CLOSE_ENOUGH:
     #     print('Node pruned by approximation')
@@ -307,10 +311,11 @@ def continue_branching():
 
     if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
         return True
+    print('INTEGER SOLUTION', master.objVal, bestSoFar)
     if master.objVal > bestSoFar:
         bestSoFar = master.objVal
         print('*******New Incumbent Solution', bestSoFar)
-
+        nodes_since_change = 0
         bestSolution = {}
         for s in lambda_s:
             if lambda_s[s].x > EPSILON:
@@ -363,10 +368,11 @@ def solve_node(node):
     solve_RMP()
     return True
 
-def determine_node_data(schedule_set, parent):
+def determine_node_data(schedule_set):
 
-    set_branch_constraints(parent)
-    master.optimize()
+    for s in lambda_s:
+        if lambda_s[s].x > 0.5:
+            print('SUPER BOOBS', lambda_s[s].x)
 
     print('Just optimised with:')
     for c in master.getConstrs():
@@ -383,20 +389,23 @@ def determine_node_data(schedule_set, parent):
     undominated = 0
     checking = 1
     while checking < len(fractional_costs):
-        if any(fractional_costs[checking][i] > fractional_costs[undominated][i]
+        if all(fractional_costs[checking][i] >= fractional_costs[undominated][i]
             for i in range(len(fractional_costs[checking]))):
             undominated = checking
         checking += 1
-
+    print('frac', fractional_schedules, fractional_costs)
     q = fractional_costs[undominated]
-    # print('q:', q)
-    # print('Non-integer?', lambda_s[fractional_schedules[undominated]].x)
+    print('q:', q)
+    print('Non-integer?', lambda_s[fractional_schedules[undominated]].x)
 
     costs = [schedule_resources[s] for s in schedule_set]
 
     for i in range(len(schedule_set)):
         if exceeds_threshold(costs[i],q):
-            print(schedule_set[i], lambda_s[schedule_set[i]].x, costs[i])
+            print('---', lambda_s[schedule_set[i]].x, costs[i])
+            if not is_integer(lambda_s[schedule_set[i]].x) and schedule_set[i] != fractional_schedules[undominated]:
+                print('buthole', q)
+                xxxx
 
     theta = tuple(schedule_set[i]
                   for i in range(len(schedule_set))
@@ -472,12 +481,14 @@ for test_case in TEST_CASES:
     start_time = time.time()
 
     # schedules = all_schedules([], c, n_i, n_d)
-    schedules = [((0, 0),)]
-    # schedules = generate_priority_schedules(I, 5)
+    # schedules = [((0, 0),)]
+    schedules = generate_priority_schedules(I, (n_i + n_d) // n_a)
 
 
     for s in schedules:
         schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
+
+    nodes_since_change = 0
 
     master = Model('Master Problem')
     master.setParam('OutputFlag', 1)
@@ -532,11 +543,10 @@ for test_case in TEST_CASES:
     feasible = True
 
     while True:
-    # test = 1
-    # while test < 10:
-    #     test += 1
+        # set_branch_constraints(node)
+        # master.optimize()
         if feasible and continue_branching():
-            theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()), node)
+            theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
 
             print('DETERMINED:', theta_q_j, alpha_j, q_j)
 
@@ -550,7 +560,13 @@ for test_case in TEST_CASES:
         try:
             node = node_stack.pop()
             nodes_explored += 1
-            # print('picked new node')
+            nodes_since_change += 1
+
+            if nodes_since_change > MAX_NODES:
+                print(f'No incumbent change in {MAX_NODES} nodes')
+                break
+
+            print('picked new node')
         except IndexError:
             break
 
