@@ -129,7 +129,7 @@ def F(W_, R, i, j, T, s):
         # Check for branching constraint stuff here
         # Adjust reduced cost if so
         for theta, alpha, q, upper in BranchConstraints:
-            if s in theta and exceeds_threshold(W_, q):
+            if s in theta:
                 print('Stuff is happening')
                 R_j -= BranchConstraints[(theta, alpha, q, upper)].pi
                 print('R_j', R_j)
@@ -324,7 +324,7 @@ def set_branch_constraints(node):
     for i in range(len(node)):
         for j in range(i + 1, len(node)):
             if node[i] == node[j]:
-                pprint(node[i])
+                # pprint(node[i])
                 print('DUPLICATE BRANCH', i, j)
                 print(len(node))
                 xxxxxx
@@ -347,7 +347,7 @@ def set_branch_constraints(node):
                 for s in theta
             ) <= alpha)
         print(f'Branch constraint: {upper}, {alpha}, {len(theta)}')
-        pprint(theta)
+        # pprint(theta)
 
 def solve_node(node):
 
@@ -383,25 +383,32 @@ def determine_node_data(schedule_set, parent):
     undominated = 0
     checking = 1
     while checking < len(fractional_costs):
-        if is_dominated(fractional_costs[checking], 0, fractional_costs[undominated], 0):
+        if any(fractional_costs[checking][i] > fractional_costs[undominated][i]
+            for i in range(len(fractional_costs[checking]))):
             undominated = checking
         checking += 1
 
     q = fractional_costs[undominated]
+    # print('q:', q)
+    # print('Non-integer?', lambda_s[fractional_schedules[undominated]].x)
 
     costs = [schedule_resources[s] for s in schedule_set]
+
+    for i in range(len(schedule_set)):
+        if exceeds_threshold(costs[i],q):
+            print(schedule_set[i], lambda_s[schedule_set[i]].x, costs[i])
 
     theta = tuple(schedule_set[i]
                   for i in range(len(schedule_set))
                   if exceeds_threshold(costs[i], q))
-    check = 0
-    for i in range(len(schedule_set)):
-        x = exceeds_threshold(costs[i], q)
-        print(f'{i} EXCEEDS: {costs[i]} {q} {x}')
-        if x:
-            check += 1
-    print(len(theta))
-    print(check)
+    # check = 0
+    # for i in range(len(schedule_set)):
+    #     x = exceeds_threshold(costs[i], q)
+    #     # print(f'{i} EXCEEDS: {costs[i]} {q} {x}')
+    #     if x:
+    #         check += 1
+    # print(len(theta))
+    # print(check)
     # pprint(fractional_costs)
     # print(fractional_costs[undominated])
 
@@ -530,6 +537,8 @@ for test_case in TEST_CASES:
     #     test += 1
         if feasible and continue_branching():
             theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()), node)
+
+            print('DETERMINED:', theta_q_j, alpha_j, q_j)
 
             # add on the new tuple to the new branches
             node_true = node + [(theta_q_j, ceil(alpha_j), q_j, True)]
