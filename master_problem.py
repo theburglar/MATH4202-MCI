@@ -57,9 +57,9 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-# TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
 # TEST_CASES = ['_test']
-TEST_CASES = ['PES_0']
+# TEST_CASES = ['PES_0']
 
 ###########################################################################
 
@@ -400,12 +400,12 @@ def determine_node_data(schedule_set):
 
     costs = [schedule_resources[s] for s in schedule_set]
 
-    for i in range(len(schedule_set)):
-        if exceeds_threshold(costs[i],q):
-            print('---', lambda_s[schedule_set[i]].x, costs[i])
-            if not is_integer(lambda_s[schedule_set[i]].x) and schedule_set[i] != fractional_schedules[undominated]:
-                print('buthole', q)
-                xxxx
+    # for i in range(len(schedule_set)):
+    #     if exceeds_threshold(costs[i],q):
+    #         print('---', lambda_s[schedule_set[i]].x, costs[i])
+    #         if not is_integer(lambda_s[schedule_set[i]].x) and schedule_set[i] != fractional_schedules[undominated]:
+                # print('buthole', q)
+                # xxxx
 
     theta = tuple(schedule_set[i]
                   for i in range(len(schedule_set))
