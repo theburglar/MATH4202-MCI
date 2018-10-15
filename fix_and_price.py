@@ -38,28 +38,11 @@ FINAL_NODE = None
 EPSILON = 10**-5
 CLOSE_ENOUGH = 1.005
 
-# n_i = 5
-# n_d = 5
-# n_a = 6
-# w_i = 3
-# w_d = 1
-# c = [10 for i in range(3)]
-# times = [5, 5, 10]
-# H = range(len(c))
-#
-# n = [n_i, n_d]
-# P = [I, D]
-# w = [w_i, w_d]
-#
-# vertices = [(p,h) for p in P for h in H] + [(FINAL_PATIENT, FINAL_HOSPITAL)]
-# V = range(len(vertices))
-# FINAL_NODE = len(V) - 1
-
 ###########################################################################
 
-TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+# TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
 # TEST_CASES = ['_test']
-# TEST_CASES = ['PES_0']
+TEST_CASES = ['PES_0']
 
 ###########################################################################
 
@@ -110,7 +93,7 @@ def exceeds_threshold(w, q):
 #        SUB-PROBLEM
 ######################################################################
 
-# TODO: Make T T_j, etc. 
+# TODO: Make T T_j, etc.
 def F(W_, R, i, j, T, s):
 
     W_ = list(W_)
@@ -133,9 +116,7 @@ def F(W_, R, i, j, T, s):
         # Adjust reduced cost if so
         for theta, alpha, q, upper in BranchConstraints:
             if s in theta:
-                print('Stuff is happening')
                 R_j -= BranchConstraints[(theta, alpha, q, upper)].pi
-                print('R_j', R_j)
 
         return tuple(W_), R_j, T
 
@@ -148,7 +129,6 @@ def F(W_, R, i, j, T, s):
         pi = MaxPeople[p_j].pi
         rho = ResourceCapacity[h_j].pi
 
-       # print('IT\s TIME!', pi, rho, sigma)
         R_j = R + f_p(T, p_j) - pi - w[p_j]*rho
         return tuple(W_), R_j, T
 
@@ -230,10 +210,6 @@ def subproblem():
                             print('Max schedules generated')
                             return [label[-1] for label in E[FINAL_NODE]]
 
-        #print("Length: ",len(L),", E: ",len(list(E[FINAL_NODE])))
-    # Good boi labels
-   # pprint(E[FINAL_NODE])
-
     # return max(E[FINAL_NODE], default=None, key=lambda x: x[2])
     return [label[-1] for label in E[FINAL_NODE]]
 
@@ -245,24 +221,12 @@ def solve_RMP():
     found = 0
 
     while True:
-
-        #print(lambda_s)
-        # for s in lambda_s:
-        #     print(str(s) + " Lambda: " + str(lambda_s[s].x))
-
         # solutions is the list of new schedules
         solutions = subproblem()
 
         if len(solutions) == 0:
             break
         found += len(solutions)
-
-        # print('#' * 80)
-        # pprint(solutions)
-        # print('Calculated RC', get_gs(ls)-sum(get_people(ls)[p]*MaxPeople[p].pi for p in P)-
-        #       sum(get_resources_used(ls)[h]*ResourceCapacity[h].pi for h in H)-
-        #       MaxAmbulances.pi)
-        # pprint(schedules)
 
         # paranoia
         for ls in solutions:
@@ -328,66 +292,11 @@ def continue_branching():
 
     return False
 
-def set_branch_constraints(node):
+def determine_node_data():
 
-    # check for duplicate branch constraints
-    for i in range(len(node)):
-        for j in range(i + 1, len(node)):
-            if node[i] == node[j]:
-                # pprint(node[i])
-                print('DUPLICATE BRANCH', i, j)
-                print(len(node))
-                xxxxxx
-
-    # TODO Figure out how the fuck changing constraints works
-    # remove all constraints
-    for key in BranchConstraints:
-        master.remove(BranchConstraints[key])
-    BranchConstraints.clear()
-
-    for theta, alpha, q, upper in node:
-        if upper:
-            BranchConstraints[(theta, alpha, q, upper)] = master.addConstr(quicksum(
-                lambda_s[s]
-                for s in theta
-            ) >= alpha)
-        else:
-            BranchConstraints[(theta, alpha, q, upper)] = master.addConstr(quicksum(
-                lambda_s[s]
-                for s in theta
-            ) <= alpha)
-        print(f'Branch constraint: {upper}, {alpha}, {len(theta)}')
-        # pprint(theta)
-
-def solve_node(node):
-
-    set_branch_constraints(node)
-    master.optimize()
-
-    for c in master.getConstrs():
-        print('CONSTRAINT:', c)
-    status = master.status
-    if status == GRB.Status.INFEASIBLE or status == GRB.Status.INF_OR_UNBD:
-        print('INFEASIBLE')
-        return False
-    solve_RMP()
-    return True
-
-def determine_node_data(schedule_set):
-
-    for s in lambda_s:
-        if lambda_s[s].x > 0.5:
-            print('SUPER BOOBS', lambda_s[s].x)
-
-    print('Just optimised with:')
-    for c in master.getConstrs():
-        print(c)
-
-    for k in BranchConstraints:
-        print(k)
-    print('='*50)
     # calculate set of non-integer lambdas
-    fractional_schedules = tuple(s for s in schedule_set if not is_integer(lambda_s[s].x))
+    lambdas = list(lambda_s.keys())
+    fractional_schedules = tuple(s for s in lambdas if not is_integer(lambda_s[s].x))
     fractional_costs = [schedule_resources[s] for s in fractional_schedules]
 
     # loop through em, looking for first undominated schedule
@@ -398,33 +307,13 @@ def determine_node_data(schedule_set):
             for i in range(len(fractional_costs[checking]))):
             undominated = checking
         checking += 1
-    print('frac', fractional_schedules, fractional_costs)
     q = fractional_costs[undominated]
-    print('q:', q)
-    print('Non-integer?', lambda_s[fractional_schedules[undominated]].x)
 
-    costs = [schedule_resources[s] for s in schedule_set]
+    costs = [schedule_resources[s] for s in lambdas]
 
-    # for i in range(len(schedule_set)):
-    #     if exceeds_threshold(costs[i],q):
-    #         print('---', lambda_s[schedule_set[i]].x, costs[i])
-    #         if not is_integer(lambda_s[schedule_set[i]].x) and schedule_set[i] != fractional_schedules[undominated]:
-                # print('buthole', q)
-                # xxxx
-
-    theta = tuple(schedule_set[i]
-                  for i in range(len(schedule_set))
+    theta = tuple(lambdas[i]
+                  for i in range(len(lambdas))
                   if exceeds_threshold(costs[i], q))
-    # check = 0
-    # for i in range(len(schedule_set)):
-    #     x = exceeds_threshold(costs[i], q)
-    #     # print(f'{i} EXCEEDS: {costs[i]} {q} {x}')
-    #     if x:
-    #         check += 1
-    # print(len(theta))
-    # print(check)
-    # pprint(fractional_costs)
-    # print(fractional_costs[undominated])
 
     alpha = sum(lambda_s[s].x for s in theta)
 
@@ -452,7 +341,6 @@ def generate_priority_schedules(priority, length):
             schedules.extend([s + x for x in generate_priority_schedules(opposite, length - len(s) - 1)])
 
     return schedules
-
 
 ######################################################################
 #              START
@@ -496,7 +384,7 @@ for test_case in TEST_CASES:
     nodes_since_change = 0
 
     master = Model('Master Problem')
-    master.setParam('OutputFlag', 1)
+    master.setParam('OutputFlag', 0)
 
     # Variables
     lambda_s = {s: master.addVar()
@@ -518,16 +406,13 @@ for test_case in TEST_CASES:
 
     BranchConstraints = {}
 
-    # for s in lambda_s:
-    #     if lambda_s[s].x==1:
-    #         print(schedules[s])
-    #         print(get_gs(schedules[s]))
     master.optimize()
 
     # to prevent gutter trash first incumbent solution
     solve_RMP()
-
     solve_RIP()
+
+    schedules_before_branching = len(lambda_s)
 
     bestSoFar = master.objVal
     print('First RIP Solution', bestSoFar)
@@ -539,68 +424,102 @@ for test_case in TEST_CASES:
     for s in lambda_s:
         lambda_s[s].vType = GRB.CONTINUOUS
 
-    master.optimize()
-    solve_RMP()
 
-    node_stack = []
-    node = [] #TODO
-    nodes_explored = 1
-    feasible = True
+
+    times_branched = 0
 
     while True:
-        # set_branch_constraints(node)
-        # master.optimize()
-        if feasible and continue_branching():
-            theta_q_j, alpha_j, q_j = determine_node_data(tuple(lambda_s.keys()))
+        feasible = True
+        # optimise once at the start to set the dual variables for any new branch constraints
+        master.optimize()
+        solve_RMP()
+        status = master.status
+        if status == GRB.Status.INFEASIBLE or status == GRB.Status.INF_OR_UNBD:
+            print('INFEASIBLE')
+            feasible = False
 
-            print('DETERMINED:', theta_q_j, alpha_j, q_j)
-
-            # add on the new tuple to the new branches
-            node_true = node + [(theta_q_j, ceil(alpha_j), q_j, True)]
-            node_false = node + [(theta_q_j, floor(alpha_j), q_j, False)]
-
-            node_stack.append(node_true)
-            node_stack.append(node_false)
-
-        try:
-            node = node_stack.pop()
-            nodes_explored += 1
-            nodes_since_change += 1
-
-            if nodes_since_change > MAX_NODES:
-                print(f'No incumbent change in {MAX_NODES} nodes')
-                break
-
-            print('picked new node')
-        except IndexError:
+        if not (feasible and continue_branching()):
             break
 
-        # print('STACK LENGTH', len(node_stack))
-        # pprint(node_stack)
-        # print('SOLVING NODE')
-        # pprint(node)
-        try:
-            feasible = solve_node(node)
-        except ValueError as e:
-            print('!' * 70)
-            print('ERROR:', e)
-            print('EXITING...')
-            print('!' * 70)
+        theta_q_j, alpha_j, q_j = determine_node_data()
+
+        # For the moment, just check whether alpha is closer to above or below
+        # TODO Make it choose the alpha value that will be the closest to a boundary point?
+        # Not sure if will change solution but might be interesting to consider
+
+        if alpha_j % 1 > 0.5:
+            upper = True
+        else:
+            upper = False
+
+        if upper:
+            alpha = ceil(alpha_j)
+
+            # paranoia
+            if (theta_q_j, alpha, q_j, upper) in BranchConstraints:
+                print('DUPLICATE BRANCH')
+                xxxxxx
+
+            BranchConstraints[(theta_q_j, alpha, q_j, upper)] = master.addConstr(quicksum(
+                lambda_s[s]
+                for s in theta_q_j
+            ) >= alpha)
+        else:
+            alpha = floor(alpha_j)
+
+            # paranoia
+            if (theta_q_j, alpha, q_j, upper) in BranchConstraints:
+                print('DUPLICATE BRANCH')
+                xxxxxx
+
+            BranchConstraints[(theta_q_j, alpha, q_j, upper)] = master.addConstr(quicksum(
+                lambda_s[s]
+                for s in theta_q_j
+            ) <= alpha)
+        print('Added Constraint...')
+
+        times_branched += 1
+        nodes_since_change += 1
+
+        if nodes_since_change > MAX_NODES:
+            print(f'No incumbent change in {MAX_NODES} nodes')
             break
 
-    #el donzoes
-    # for s in lambda_s:
-    #     print(str(s) + " Lambda: " + str(lambda_s[s].x))
+    # Remove all branch constraints, solve RIP one more time
+    for key in BranchConstraints:
+        master.remove(BranchConstraints[key])
+    BranchConstraints.clear()
+
+    solve_RIP()
+
+    print('#'*50)
+    print('Schedules after first RIP:', schedules_before_branching)
+    print('Schedules after branching:', len(lambda_s))
+    for s in bestSolution:
+        print(f'{round(bestSolution[s], 3)} lot(s) of', s)
+    print('#'*50)
+
+    print('Final RIP', '- Should be the same as above')
+    for s in lambda_s:
+        if lambda_s[s].x > EPSILON:
+            print(f'{round(lambda_s[s].x, 3)} lot(s) of', s)
+    print('#'*50)
 
     duration = time.time() - start_time
 
-    # print('Schedules selected:')
-    for s in bestSolution:
-        print(f'{round(bestSolution[s], 3)} lot(s) of', s)
+    # See GAP with linear objective
+    for s in lambda_s:
+        lambda_s[s].vType = GRB.CONTINUOUS
+    master.optimize()
+    linear_objVal = master.objVal
+
     print(f'Successfully ran test case `{test_case}`')
     print('Optimal Value Determined:', bestSoFar)
 
-    print(f'Explored {nodes_explored} nodes')
+    print(f'Linear objective: {linear_objVal}')
+    print(f'% Gap: {round(((linear_objVal - bestSoFar) / linear_objVal) * 100, 3)}%')
+
+    print(f'Explored {times_branched} nodes')
     print(f'Time taken: {duration} seconds')
     print('#'*50)
 
@@ -608,5 +527,7 @@ for test_case in TEST_CASES:
         for s in bestSolution:
             test_result.write(f'{round(bestSolution[s], 3)} lot(s) of {s}\n')
         test_result.write(f'Optimal Value Determined: {bestSoFar}\n')
-        test_result.write(f'Explored {nodes_explored} nodes')
+        test_result.write(f'Linear objective: {linear_objVal}\n')
+        test_result.write(f'% Gap: {round(((linear_objVal - bestSoFar) / linear_objVal) * 100, 3)}%\n')
+        test_result.write(f'Explored {times_branched} nodes\n')
         test_result.write(f'Time taken: {duration} seconds')
