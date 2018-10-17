@@ -40,9 +40,9 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-# TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
 # TEST_CASES = ['_test']
-TEST_CASES = ['PES_0']
+# TEST_CASES = ['PES_0']
 
 ###########################################################################
 
@@ -294,6 +294,8 @@ def continue_branching():
 
 def determine_node_data():
 
+    global BranchConstraints
+
     # calculate set of non-integer lambdas
     lambdas = list(lambda_s.keys())
     fractional_schedules = tuple(s for s in lambdas if not is_integer(lambda_s[s].x))
@@ -310,6 +312,21 @@ def determine_node_data():
     q = fractional_costs[undominated]
 
     costs = [schedule_resources[s] for s in lambdas]
+
+    # TODO If we find identical resoure vector in 2 places, branch so that 1 variable
+
+
+    for i in range(len(fractional_costs)):
+        for j in range(i+1, len(fractional_costs)):
+            if fractional_costs[i] == fractional_costs[j]:
+                print(f'Duplicate resource vectors {fractional_costs[i]} <-> {fractional_costs[j]}')
+                BranchConstraints[((fractional_schedules[i],),0,(),True)] = master.addConstr(lambda_s[fractional_schedules[i]] == 0)
+
+    print('-'*50)
+    for s in fractional_schedules:
+        print(s, schedule_resources[s], lambda_s[s].x)
+    print(q)
+    print('-'*50)
 
     theta = tuple(lambdas[i]
                   for i in range(len(lambdas))
@@ -441,7 +458,13 @@ for test_case in TEST_CASES:
         if not (feasible and continue_branching()):
             break
 
+        for s in lambda_s:
+            if lambda_s[s].x > EPSILON:
+                print(s, lambda_s[s].x)
+
+
         theta_q_j, alpha_j, q_j = determine_node_data()
+        print(alpha_j)
 
         # For the moment, just check whether alpha is closer to above or below
         # TODO Make it choose the alpha value that will be the closest to a boundary point?
@@ -451,6 +474,8 @@ for test_case in TEST_CASES:
             upper = True
         else:
             upper = False
+
+        print('New Constraint:', (theta_q_j, alpha_j, q_j, upper))
 
         if upper:
             alpha = ceil(alpha_j)
@@ -480,6 +505,8 @@ for test_case in TEST_CASES:
 
         times_branched += 1
         nodes_since_change += 1
+
+        print(f'Nodes since change: {nodes_since_change}')
 
         if nodes_since_change > MAX_NODES:
             print(f'No incumbent change in {MAX_NODES} nodes')
