@@ -41,6 +41,8 @@ CLOSE_ENOUGH = 1.005
 ###########################################################################
 
 TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(5)]
+# TEST_CASES = ['OPT_12']
 # TEST_CASES = ['_test']
 # TEST_CASES = ['PES_0']
 
@@ -368,7 +370,7 @@ for test_case in TEST_CASES:
     print(f'Running Test Case {test_case}...')
     print('-'*50)
     # initialise values from test cases
-    with open(f'test_cases/{test_case}.txt') as data:
+    with open(f'rudi_lame_data/{test_case}.txt') as data:
         n_i = int(data.readline().split('#')[0])
         n_d = int(data.readline().split('#')[0])
         n_a = int(data.readline().split('#')[0])
@@ -392,8 +394,10 @@ for test_case in TEST_CASES:
 
     # schedules = all_schedules([], c, n_i, n_d)
     # schedules = [((0, 0),)]
-    schedules = generate_priority_schedules(I, (n_i + n_d) // n_a)
-
+    generate_start = time.time()
+    schedules = generate_priority_schedules(D, (n_i + n_d) // n_a)
+    print('Initial schedules generated...')
+    generate_time = time.time() - generate_start
 
     for s in schedules:
         schedule_resources[s] = tuple(get_people(s)) + tuple(get_resources_used(s))
@@ -449,7 +453,7 @@ for test_case in TEST_CASES:
         feasible = True
         # optimise once at the start to set the dual variables for any new branch constraints
         master.optimize()
-        solve_RMP()
+
         status = master.status
         if status == GRB.Status.INFEASIBLE or status == GRB.Status.INF_OR_UNBD:
             print('INFEASIBLE')
@@ -457,7 +461,7 @@ for test_case in TEST_CASES:
 
         if not (feasible and continue_branching()):
             break
-
+        solve_RMP()
         for s in lambda_s:
             if lambda_s[s].x > EPSILON:
                 print(s, lambda_s[s].x)
@@ -547,14 +551,16 @@ for test_case in TEST_CASES:
     print(f'% Gap: {round(((linear_objVal - bestSoFar) / linear_objVal) * 100, 3)}%')
 
     print(f'Explored {times_branched} nodes')
-    print(f'Time taken: {duration} seconds')
+    print(f'Time generating schedules: {generate_time} seconds')
+    print(f'Total time taken: {duration} seconds')
     print('#'*50)
 
-    with open(f'test_results/{test_case}_results.txt', 'w') as test_result:
+    with open(f'rudi_lame_results_delayed/{test_case}_results.txt', 'w') as test_result:
         for s in bestSolution:
             test_result.write(f'{round(bestSolution[s], 3)} lot(s) of {s}\n')
         test_result.write(f'Optimal Value Determined: {bestSoFar}\n')
         test_result.write(f'Linear objective: {linear_objVal}\n')
         test_result.write(f'% Gap: {round(((linear_objVal - bestSoFar) / linear_objVal) * 100, 3)}%\n')
         test_result.write(f'Explored {times_branched} nodes\n')
-        test_result.write(f'Time taken: {duration} seconds')
+        test_result.write(f'Time generating schedules: {generate_time} seconds\n')
+        test_result.write(f'Total time taken: {duration} seconds')
