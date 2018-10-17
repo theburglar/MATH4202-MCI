@@ -12,15 +12,15 @@ SCENARIOS = ['PES','MOD','OPT']
 
 tests= []
 for i in range(5):
-    n_i = randint(4,30)
-    n_d = randint(4,30)
-    n_a = randint(4,30)
+    n_i = randint(10,30)
+    n_d = randint(10,30)
+    n_a = randint(10,30)
     w_i = randint(3,6)
     w_d = randint(1,3)
     c = []
     required_resources = n_i * w_i + n_d * w_d
     while sum(c) < required_resources:
-        c.append(randint(4,30))
+        c.append(randint(10,30))
     times = [str(randint(5,50)) for h in c]
     c_input = ",".join([str(x) for x in c])
     times_input = ",".join(times)
