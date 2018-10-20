@@ -40,11 +40,7 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-# TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
-TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(5)]
-# TEST_CASES = ['OPT_12']
-# TEST_CASES = ['_test']
-# TEST_CASES = ['PES_0']
+TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(1,100)]
 
 ###########################################################################
 
@@ -289,8 +285,6 @@ def continue_branching():
                 bestSolution[s] = lambda_s[s].x
     return True
 
-
-
     # if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
     #     return True
     # print('INTEGER SOLUTION', master.objVal, bestSoFar)
@@ -400,7 +394,7 @@ for test_case in TEST_CASES:
     print(f'Running Test Case {test_case}...')
     print('-'*50)
     # initialise values from test cases
-    with open(f'rudi_lame_data/{test_case}.txt') as data:
+    with open(f'test_cases/{test_case}.txt') as data:
         n_i = int(data.readline().split('#')[0])
         n_d = int(data.readline().split('#')[0])
         n_a = int(data.readline().split('#')[0])
@@ -422,10 +416,10 @@ for test_case in TEST_CASES:
 
     start_time = time.time()
 
-    # schedules = all_schedules([], c, n_i, n_d)
-    # schedules = [((0, 0),)]
+    # Starting Schedules
     generate_start = time.time()
     schedules = generate_priority_schedules(D, (n_i + n_d) // n_a)
+    # schedules = [((0, 0),)]
     print('Initial schedules generated...')
     generate_time = time.time() - generate_start
 
@@ -585,7 +579,7 @@ for test_case in TEST_CASES:
     print(f'Total time taken: {duration} seconds')
     print('#'*50)
 
-    with open(f'rudi_lame_results_delayed/{test_case}_results.txt', 'w') as test_result:
+    with open(f'test_results/fix_and_price/delayed_first/{test_case}_results.txt', 'w') as test_result:
         for s in bestSolution:
             test_result.write(f'{round(bestSolution[s], 3)} lot(s) of {s}\n')
         test_result.write(f'Optimal Value Determined: {bestSoFar}\n')

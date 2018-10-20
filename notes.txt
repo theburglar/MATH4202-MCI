@@ -1,9 +1,5 @@
 Variables:
 
--Initial RMP
-    -With
-    -Without
-
 -Pregenerating Schedules:
     -None
     -Immediate First
@@ -17,12 +13,6 @@ Variables:
 -Different Alpha_j determining methods
     -First alpha
     -Closest integer alpha
-
-
-
-
-
-
 
 
 Bnp vs FnP 10 cases each
