@@ -40,7 +40,7 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(1,100)]
+TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(0,100)]
 
 ###########################################################################
 
@@ -272,9 +272,6 @@ def continue_branching():
     global bestSolution
     global nodes_since_change
 
-    if master.objVal < bestSoFar:
-        return False
-
     if master.objVal > bestSoFar and all(is_integer(lambda_s[s].x) for s in lambda_s):
         bestSoFar = master.objVal
         print('*******New Incumbent Solution', bestSoFar)
@@ -283,6 +280,13 @@ def continue_branching():
         for s in lambda_s:
             if lambda_s[s].x > EPSILON:
                 bestSolution[s] = lambda_s[s].x
+
+    if all(is_integer(lambda_s[s].x) for s in lambda_s):
+        return False
+
+    if master.objVal < bestSoFar:
+        return False
+
     return True
 
     # if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
@@ -389,6 +393,7 @@ def generate_priority_schedules(priority, length):
 #              START
 ######################################################################
 
+batch_start = time.time()
 for test_case in TEST_CASES:
 
     print(f'Running Test Case {test_case}...')
@@ -588,3 +593,6 @@ for test_case in TEST_CASES:
         test_result.write(f'Explored {times_branched} nodes\n')
         test_result.write(f'Time generating schedules: {generate_time} seconds\n')
         test_result.write(f'Total time taken: {duration} seconds')
+
+print('=' * 50)
+print(f'Batch Time Taken: {time.time() - batch_start}')
