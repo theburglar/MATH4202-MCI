@@ -40,7 +40,7 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+# TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
 TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(5)]
 # TEST_CASES = ['OPT_12']
 # TEST_CASES = ['_test']
@@ -275,15 +275,11 @@ def continue_branching():
     global bestSoFar
     global bestSolution
     global nodes_since_change
-    # APPROXIMATION PRUNE
-    # if master.objVal < bestSoFar * CLOSE_ENOUGH:
-    #     print('Node pruned by approximation')
-    #     return False
 
-    if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
-        return True
-    print('INTEGER SOLUTION', master.objVal, bestSoFar)
-    if master.objVal > bestSoFar:
+    if master.objVal < bestSoFar:
+        return False
+
+    if master.objVal > bestSoFar and all(is_integer(lambda_s[s].x) for s in lambda_s):
         bestSoFar = master.objVal
         print('*******New Incumbent Solution', bestSoFar)
         nodes_since_change = 0
@@ -291,8 +287,31 @@ def continue_branching():
         for s in lambda_s:
             if lambda_s[s].x > EPSILON:
                 bestSolution[s] = lambda_s[s].x
+    return True
 
-    return False
+
+
+    # if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
+    #     return True
+    # print('INTEGER SOLUTION', master.objVal, bestSoFar)
+    # if master.objVal > bestSoFar:
+    #     bestSoFar = master.objVal
+    #     print('*******New Incumbent Solution', bestSoFar)
+    #     nodes_since_change = 0
+    #     bestSolution = {}
+    #     for s in lambda_s:
+    #         if lambda_s[s].x > EPSILON:
+    #             bestSolution[s] = lambda_s[s].x
+    #
+    # return False
+
+def find_close_alpha(q, lambdas, costs):
+    theta = tuple(lambdas[i]
+                  for i in range(len(lambdas))
+                  if exceeds_threshold(costs[i], q))
+
+    alpha = sum(lambda_s[s].x for s in theta)
+    return min(alpha % 1, 1 - (alpha % 1))
 
 def determine_node_data():
 
@@ -302,7 +321,22 @@ def determine_node_data():
     lambdas = list(lambda_s.keys())
     fractional_schedules = tuple(s for s in lambdas if not is_integer(lambda_s[s].x))
     fractional_costs = [schedule_resources[s] for s in fractional_schedules]
+    costs = [schedule_resources[s] for s in lambdas]
 
+    # OPTION A - Optimal I suppose
+    # find q which is closest to an integer solution and use that one
+    # potential_qs = []
+    # for i in range(len(fractional_schedules)):
+    #     for j in range(len(fractional_schedules)):
+    #         if i != j and all(fractional_costs[j][k] >= fractional_costs[i][k]
+    #                for k in range(len(fractional_costs[i]))):
+    #             break
+    #     else:
+    #         potential_qs.append(fractional_costs[i])
+    # print('test', potential_qs)
+    # q = min(potential_qs, key=lambda x: find_close_alpha(x, lambdas, costs))
+
+    # OPTION B - Quick and Dirty
     # loop through em, looking for first undominated schedule
     undominated = 0
     checking = 1
@@ -313,11 +347,7 @@ def determine_node_data():
         checking += 1
     q = fractional_costs[undominated]
 
-    costs = [schedule_resources[s] for s in lambdas]
-
-    # TODO If we find identical resoure vector in 2 places, branch so that 1 variable
-
-
+    # If we find identical resoure vector in 2 places, branch so that 1 variable
     for i in range(len(fractional_costs)):
         for j in range(i+1, len(fractional_costs)):
             if fractional_costs[i] == fractional_costs[j]:
