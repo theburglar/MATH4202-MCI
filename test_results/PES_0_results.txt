@@ -1,8 +1,0 @@
-2.0 lot(s) of ((0, 1),)
-1.0 lot(s) of ((0, 2),)
-3.0 lot(s) of ((0, 3),)
-Optimal Value Determined: 0.29410604732038
-Linear objective: 4.500694216179816
-% Gap: 93.465%
-Explored 101 nodes
-Time taken: 8.567798376083374 seconds

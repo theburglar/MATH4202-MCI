@@ -1,12 +1,18 @@
-TODO:
-    1. Fix constraint recreating stuff that is probably slow as balls
+Variables:
 
+-Initial RMP
+    -With
+    -Without
 
-1. Master problem -> test
-    -class stuff up correctly
-    -generate variables in correct structure
-    -look into 'self' renaming
-2. Longest path sub-problem
-    -do algorithm path solver
-        -probably own class for solving graph
-3. Branch and Price Business
+-Pregenerating Schedules:
+    -None
+    -Immediate First
+    -Delayed First
+
+-BnP vs FnP
+    -BnP
+    -FnP
+
+-Different Alpha_j determining methods
+    -First alpha
+    -Closest integer alpha
