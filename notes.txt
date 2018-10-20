@@ -8,6 +8,7 @@ Variables:
     -None
     -Immediate First
     -Delayed First
+    -Combined
 
 -BnP vs FnP
     -BnP
@@ -16,3 +17,20 @@ Variables:
 -Different Alpha_j determining methods
     -First alpha
     -Closest integer alpha
+
+
+
+
+
+
+
+
+Bnp vs FnP 10 cases each
+
+Fix And Price:
+    Pregenerating Schedule Options
+    Different Alpha_j Policies
+
+Initial With no Schedge generation
+    -I first
+    -D First

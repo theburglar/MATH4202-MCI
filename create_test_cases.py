@@ -7,11 +7,12 @@ Created on Mon Oct  8 20:03:03 2018
 from random import randint
 import os.path
 
-
+NUM_CASES = 100
 SCENARIOS = ['PES','MOD','OPT']
 
+
 tests= []
-for i in range(5):
+for i in range(NUM_CASES):
     n_i = randint(10,30)
     n_d = randint(10,30)
     n_a = randint(10,30)
@@ -31,7 +32,7 @@ for i in range(5):
 
    # print(inputs)
    
-    save_path = "C:\\Users\\rosie\\OneDrive\\Documents\\S2 2018\\MATH4202\\MATH4202-MCI\\rudi_lame_data"
+    save_path = "test_cases"
     for SCENARIO in range(3):
         file_name = SCENARIOS[SCENARIO]+"_"+str(i)
         completeName = os.path.join(save_path, file_name+".txt")
