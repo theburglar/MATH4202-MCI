@@ -41,6 +41,7 @@ CLOSE_ENOUGH = 1.005
 ###########################################################################
 
 TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(0,100)]
+# TEST_CASES = [f'{scen}_{i}' for scen in ('MOD','PES') for i in range(0,100)]
 
 ###########################################################################
 
@@ -323,27 +324,27 @@ def determine_node_data():
 
     # OPTION A - Optimal I suppose
     # find q which is closest to an integer solution and use that one
-    # potential_qs = []
-    # for i in range(len(fractional_schedules)):
-    #     for j in range(len(fractional_schedules)):
-    #         if i != j and all(fractional_costs[j][k] >= fractional_costs[i][k]
-    #                for k in range(len(fractional_costs[i]))):
-    #             break
-    #     else:
-    #         potential_qs.append(fractional_costs[i])
-    # print('test', potential_qs)
-    # q = min(potential_qs, key=lambda x: find_close_alpha(x, lambdas, costs))
+    potential_qs = []
+    for i in range(len(fractional_schedules)):
+        for j in range(len(fractional_schedules)):
+            if i != j and all(fractional_costs[j][k] >= fractional_costs[i][k]
+                   for k in range(len(fractional_costs[i]))):
+                break
+        else:
+            potential_qs.append(fractional_costs[i])
+    print('test', potential_qs)
+    q = min(potential_qs, key=lambda x: find_close_alpha(x, lambdas, costs))
 
     # OPTION B - Quick and Dirty
     # loop through em, looking for first undominated schedule
-    undominated = 0
-    checking = 1
-    while checking < len(fractional_costs):
-        if all(fractional_costs[checking][i] >= fractional_costs[undominated][i]
-            for i in range(len(fractional_costs[checking]))):
-            undominated = checking
-        checking += 1
-    q = fractional_costs[undominated]
+    # undominated = 0
+    # checking = 1
+    # while checking < len(fractional_costs):
+    #     if all(fractional_costs[checking][i] >= fractional_costs[undominated][i]
+    #         for i in range(len(fractional_costs[checking]))):
+    #         undominated = checking
+    #     checking += 1
+    # q = fractional_costs[undominated]
 
     # If we find identical resoure vector in 2 places, branch so that 1 variable
     for i in range(len(fractional_costs)):
@@ -423,8 +424,9 @@ for test_case in TEST_CASES:
 
     # Starting Schedules
     generate_start = time.time()
-    schedules = generate_priority_schedules(D, (n_i + n_d) // n_a)
-    # schedules = [((0, 0),)]
+    # schedules = generate_priority_schedules(D, (n_i + n_d) // n_a)
+    schedules = [((0, 0),)]
+    # schedules.extend(generate_priority_schedules(D, (n_i + n_d) // n_a))
     print('Initial schedules generated...')
     generate_time = time.time() - generate_start
 
@@ -584,7 +586,7 @@ for test_case in TEST_CASES:
     print(f'Total time taken: {duration} seconds')
     print('#'*50)
 
-    with open(f'test_results/fix_and_price/delayed_first/{test_case}_results.txt', 'w') as test_result:
+    with open(f'test_results/fix_and_price/none_closest/{test_case}_results.txt', 'w') as test_result:
         for s in bestSolution:
             test_result.write(f'{round(bestSolution[s], 3)} lot(s) of {s}\n')
         test_result.write(f'Optimal Value Determined: {bestSoFar}\n')

@@ -87,7 +87,7 @@ def generate_priority_schedules(priority, length):
 
     return schedules
 
-
+batch_start = time.time()
 for test_case in TEST_CASES:
 
     print(f'Running Test Case {test_case}...')
@@ -163,3 +163,5 @@ for test_case in TEST_CASES:
         test_result.write(f'Time generating schedules: {generate_time} seconds\n')
         test_result.write(f'Total time taken: {duration} seconds')
 
+print('=' * 50)
+print(f'Batch Time Taken: {time.time() - batch_start}')

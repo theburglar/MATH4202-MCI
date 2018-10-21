@@ -1,0 +1,12 @@
+2.0 lot(s) of ((0, 0),)
+3.0 lot(s) of ((0, 2),)
+1.0 lot(s) of ((0, 4),)
+3.0 lot(s) of ((0, 5),)
+4.0 lot(s) of ((0, 7),)
+4.0 lot(s) of ((0, 8),)
+3.0 lot(s) of ((0, 9),)
+3.0 lot(s) of ((0, 1), (0, 3))
+1.0 lot(s) of ((0, 1), (0, 7))
+Optimal Value Determined: 13.922100531439826
+Time generating schedules: 0.0 seconds
+Total time taken: 0.011966466903686523 seconds

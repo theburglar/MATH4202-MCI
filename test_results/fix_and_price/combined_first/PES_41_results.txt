@@ -1,0 +1,17 @@
+1.0 lot(s) of ((0, 4),)
+7.0 lot(s) of ((1, 1),)
+1.0 lot(s) of ((1, 8),)
+1.0 lot(s) of ((1, 9), (0, 3))
+2.0 lot(s) of ((1, 8), (0, 3))
+1.0 lot(s) of ((1, 9), (0, 5))
+4.0 lot(s) of ((1, 8), (0, 7))
+2.0 lot(s) of ((1, 9), (0, 4))
+2.0 lot(s) of ((1, 9), (0, 0))
+3.0 lot(s) of ((1, 8), (0, 2))
+1.0 lot(s) of ((1, 9), (0, 6))
+Optimal Value Determined: 13.6663264639758
+Linear objective: 13.724949236323779
+% Gap: 0.427%
+Explored 92 nodes
+Time generating schedules: 0.0 seconds
+Total time taken: 5.416483163833618 seconds
