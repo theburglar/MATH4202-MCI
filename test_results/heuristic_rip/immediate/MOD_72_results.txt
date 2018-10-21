@@ -3,4 +3,4 @@
 5.0 lot(s) of ((0, 6),)
 Optimal Value Determined: 1.9782971890870997
 Time generating schedules: 0.0 seconds
-Total time taken: 0.0030243396759033203 seconds
+Total time taken: 0.0 seconds

@@ -3,4 +3,4 @@
 15.0 lot(s) of ((1, 5),)
 Optimal Value Determined: 15.674290545899336
 Time generating schedules: 0.0 seconds
-Total time taken: 0.014988899230957031 seconds
+Total time taken: 0.015619993209838867 seconds

@@ -6,4 +6,4 @@
 5.0 lot(s) of ((0, 8),)
 Optimal Value Determined: 12.845470628045373
 Time generating schedules: 0.0 seconds
-Total time taken: 0.007976055145263672 seconds
+Total time taken: 0.0 seconds

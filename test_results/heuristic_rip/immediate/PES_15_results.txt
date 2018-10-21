@@ -8,5 +8,5 @@
 1.0 lot(s) of ((0, 7), (0, 1))
 1.0 lot(s) of ((0, 7), (0, 5))
 Optimal Value Determined: 1.1063870568582006
-Time generating schedules: 0.001998424530029297 seconds
-Total time taken: 0.2453444004058838 seconds
+Time generating schedules: 0.0 seconds
+Total time taken: 0.0156557559967041 seconds

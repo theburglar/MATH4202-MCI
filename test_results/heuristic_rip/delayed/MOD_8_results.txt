@@ -4,4 +4,4 @@
 1.0 lot(s) of ((1, 2), (1, 2))
 Optimal Value Determined: 19.621603919624935
 Time generating schedules: 0.0 seconds
-Total time taken: 0.002962827682495117 seconds
+Total time taken: 0.0 seconds

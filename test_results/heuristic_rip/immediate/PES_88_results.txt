@@ -6,4 +6,4 @@
 5.0 lot(s) of ((0, 7),)
 Optimal Value Determined: 1.00214438131866
 Time generating schedules: 0.0 seconds
-Total time taken: 0.004989147186279297 seconds
+Total time taken: 0.0 seconds

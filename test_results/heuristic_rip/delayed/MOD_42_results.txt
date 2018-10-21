@@ -1,4 +1,4 @@
 23.0 lot(s) of ((1, 8),)
 Optimal Value Determined: 17.376797741128634
 Time generating schedules: 0.0 seconds
-Total time taken: 0.005980730056762695 seconds
+Total time taken: 0.0 seconds
