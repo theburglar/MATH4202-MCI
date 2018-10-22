@@ -1,10 +1,9 @@
-3.0 lot(s) of ((0, 0), (1, 1))
-5.0 lot(s) of ((0, 4), (1, 2))
-5.0 lot(s) of ((0, 5), (1, 6))
+5.0 lot(s) of ((0, 5), (1, 4), (1, 3))
+2.0 lot(s) of ((0, 7), (1, 0), (1, 3))
+3.0 lot(s) of ((0, 7), (1, 0))
 1.0 lot(s) of ((0, 6), (1, 0))
-3.0 lot(s) of ((0, 6), (1, 2))
-2.0 lot(s) of ((0, 7), (1, 0))
-3.0 lot(s) of ((0, 7), (1, 4))
-Optimal Value Determined: 6.372409581716029
-Time generating schedules: 0.0 seconds
-Total time taken: 0.015616178512573242 seconds
+8.0 lot(s) of ((0, 6), (1, 2))
+3.0 lot(s) of ((0, 4), (1, 1))
+Optimal Value Determined: 7.079650109524694
+Time generating schedules: 0.008181571960449219 seconds
+Total time taken: 0.00917816162109375 seconds
