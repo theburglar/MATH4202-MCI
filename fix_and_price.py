@@ -263,7 +263,7 @@ def solve_RIP():
     master.optimize()
 
 ###############################################################################
-#       Branch and Price to get Integer Solution
+#       Fix and Price to get Integer Solution
 ###############################################################################
 def is_integer(num):
     return abs(num % 1 - 0.5) > 0.5 - EPSILON

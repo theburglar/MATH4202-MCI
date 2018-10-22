@@ -57,9 +57,11 @@ CLOSE_ENOUGH = 1.005
 
 ###########################################################################
 
-TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
+# TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(50)]
 # TEST_CASES = ['_test']
 # TEST_CASES = ['PES_0']
+TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(5,10)]
+
 
 ###########################################################################
 
@@ -314,10 +316,8 @@ def continue_branching():
     #     print('Node pruned by approximation')
     #     return False
 
-    if any(not(is_integer(lambda_s[s].x)) for s in lambda_s):
-        return True
     print('INTEGER SOLUTION', master.objVal, bestSoFar)
-    if master.objVal > bestSoFar:
+    if master.objVal > bestSoFar and all(is_integer(lambda_s[s].x) for s in lambda_s):
         bestSoFar = master.objVal
         print('*******New Incumbent Solution', bestSoFar)
         nodes_since_change = 0
@@ -326,7 +326,13 @@ def continue_branching():
             if lambda_s[s].x > EPSILON:
                 bestSolution[s] = lambda_s[s].x
 
-    return False
+    if all(is_integer(lambda_s[s].x) for s in lambda_s):
+        return False
+
+    if master.objVal < bestSoFar:
+        return False
+
+    return True
 
 def set_branch_constraints(node):
 
@@ -400,6 +406,15 @@ def determine_node_data(schedule_set):
         checking += 1
     print('frac', fractional_schedules, fractional_costs)
     q = fractional_costs[undominated]
+
+    # If we find identical resoure vector in 2 places, branch so that 1 variable
+    for i in range(len(fractional_costs)):
+        for j in range(i + 1, len(fractional_costs)):
+            if fractional_costs[i] == fractional_costs[j]:
+                print(f'Duplicate resource vectors {fractional_costs[i]} <-> {fractional_costs[j]}')
+                BranchConstraints[((fractional_schedules[i],), 0, (), True)] = master.addConstr(
+                    lambda_s[fractional_schedules[i]] == 0)
+
     print('q:', q)
     print('Non-integer?', lambda_s[fractional_schedules[undominated]].x)
 
@@ -604,7 +619,7 @@ for test_case in TEST_CASES:
     print(f'Time taken: {duration} seconds')
     print('#'*50)
 
-    with open(f'test_results/{test_case}_results.txt', 'w') as test_result:
+    with open(f'test_results/branch_and_price/{test_case}_results.txt', 'w') as test_result:
         for s in bestSolution:
             test_result.write(f'{round(bestSolution[s], 3)} lot(s) of {s}\n')
         test_result.write(f'Optimal Value Determined: {bestSoFar}\n')

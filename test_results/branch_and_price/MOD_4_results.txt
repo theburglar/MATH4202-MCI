@@ -1,0 +1,12 @@
+1.0 lot(s) of ((0, 5),)
+2.0 lot(s) of ((0, 1), (0, 3))
+4.0 lot(s) of ((1, 5),)
+1.0 lot(s) of ((1, 0),)
+3.0 lot(s) of ((1, 6),)
+3.0 lot(s) of ((1, 4),)
+2.0 lot(s) of ((1, 1), (0, 6))
+3.0 lot(s) of ((1, 4), (0, 2))
+1.0 lot(s) of ((1, 1), (0, 3))
+3.0 lot(s) of ((1, 1), (0, 0))
+Optimal Value Determined: 16.22765013324938
+Explored 102 nodesTime taken: 11.083171844482422 seconds
