@@ -13,4 +13,4 @@ Linear objective: 29.58995592727604
 % Gap: 0.999%
 Explored 93 nodes
 Time generating schedules: 0.015062570571899414 seconds
-Total time taken: 2490.256797841114 seconds
+Total time taken: 50.256797841114 seconds
