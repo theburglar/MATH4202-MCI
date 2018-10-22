@@ -23,7 +23,7 @@ TEST_CASES = [f'{scen}_{i}' for scen in ('OPT','MOD','PES') for i in range(100)]
 
 ##################################################################
 # Which Heuristic to run
-HEURISTIC = D
+HEURISTIC = I
 ##################################################################
 
 
@@ -65,25 +65,70 @@ def get_gs(schedule):
     return g
 
 # Schedule Generation
-def add_one_trip(schedules, priority):
-    next_schedules = []
-    for s in schedules:
-        for h in H:
-            next_schedules.append(s + ((priority, h),))
-    return next_schedules
+def generate_heuristic_schedules_immediate():
 
-def generate_priority_schedules(priority, length):
-    schedules = [((priority, h),) for h in H]
+    n_d_remaining = n_d
+    n_i_remaining = n_i
 
-    next_layer = schedules[:]
-    for i in range(length):
-        next_layer = add_one_trip(next_layer, priority)
-        schedules.extend(next_layer)
+    resources_remaining = c[:]
 
-    opposite = (priority + 1) % 2
-    for s in schedules[:]:
-        if len(s) < length:
-            schedules.extend([s + x for x in generate_priority_schedules(opposite, length - len(s) - 1)])
+    visit_order = []
+
+    print('n_i', n_i)
+    print('w_i', w_i)
+    print('c', c)
+    print('times', times)
+
+    while n_i_remaining > 0:
+
+        # get nearest available hospital
+        hospital = None
+        best_time = 100
+        for i, r in enumerate(resources_remaining):
+            if r >= w_i and times[i] < best_time:
+                hospital = i
+                best_time = times[i]
+
+        # add to schedule
+        visit_order.append(hospital)
+        resources_remaining[hospital] -= w_i
+        n_i_remaining -= 1
+
+    cutoff = len(visit_order)
+
+    while n_d_remaining > 0:
+
+        # get nearest available hospital
+        hospital = None
+        best_time = 100
+        for i, r in enumerate(resources_remaining):
+            if r >= w_d and times[i] < best_time:
+                hospital = i
+                best_time = times[i]
+
+        if hospital is None:
+            break
+        # add to schedule
+        visit_order.append(hospital)
+        resources_remaining[hospital] -= w_d
+        n_d_remaining -= 1
+
+    schedules = []
+    for i in range(n_a):
+        patient = I
+        j = i
+        if j >= cutoff:
+            patient = D
+        sched = [(patient, visit_order[j])]
+
+        while True:
+            j += n_a
+            if j >= cutoff:
+                patient = D
+            if j >= len(visit_order):
+                schedules.append(tuple(sched))
+                break
+            sched.append((patient, visit_order[j]))
 
     return schedules
 
@@ -113,7 +158,9 @@ for test_case in TEST_CASES:
 
     generate_start = time.time()
 
-    schedules = generate_priority_schedules(HEURISTIC, (n_i + n_d) // n_a)
+    schedules = generate_heuristic_schedules_immediate()
+    print(schedules)
+    xxxx
 
     print('Initial schedules generated...')
     generate_time = time.time() - generate_start
