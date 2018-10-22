@@ -17,6 +17,7 @@ SCENARIO_LABELS = {'MOD': 'Moderate',
                    'OPT': 'Optimistic',
                    'PES': 'Pessimistic'}
 
+
 def get_fnp_data():
     data = {}
     for test_name in TESTS:
@@ -76,7 +77,9 @@ def get_heuristic_gap_graph_data(gap_data):
             n_p = float(file.readline().strip())
             n_p += float(file.readline().strip())
             n_a = float(file.readline().strip())
-            file.readline(); file.readline(); file.readline()
+            file.readline();
+            file.readline();
+            file.readline()
             times = [int(t) for t in file.readline().strip().split(',')]
             average_time = sum(times) / len(times)
         for i in ('delayed', 'immediate'):
@@ -108,16 +111,59 @@ def heuristic_scatter_plot(p, scen):
     data = full_heuristic_gap_graph_data()[p][scen]
     x = [data[k][0] for k in data]
     y = [data[k][1] for k in data]
-    plt.scatter(x,y)
+    plt.figure()
+    plt.scatter(x, y)
     plt.ylim(0, 100)
     plt.title(f'{p.capitalize()}-first: {SCENARIO_LABELS[scen]}')
     plt.xlabel('Average Schedule Time per Ambulance')
     plt.ylabel('Gap %')
     # plt.show()
-    plt.savefig(f'C:\\Users\\Rudi\\Documents\\Uni\\MATH4202\\Figures\\scatter_{p}_firsrt_{scen}.jpeg')
+    plt.savefig(f'C:\\Users\\Rudi\\Documents\\Uni\\MATH4202\\Figures\\scatter_{p}_first_{scen}.jpeg')
 
-def get_fnp_table_stats(fnp_data):
-    pass
+
+def get_fnp_table_stats():
+    data = get_fnp_data()['combined_first']
+    res = {}
+    fnp = {}
+    for scen in ('MOD', 'OPT', 'PES'):
+        gaps = []
+        times = []
+        for i in range(100):
+            gaps.append(data[f'{scen}_{i}']['gap'])
+            times.append(data[f'{scen}_{i}']['time'])
+        avg_gap = sum(gaps) / len(gaps)
+        max_gap = max(gaps)
+        std_gap = stdev(gaps)
+        avg_time = sum(times) / len(times)
+        max_time = max(times)
+        std_time = stdev(times)
+        fnp[scen] = {'avg_gap': round(avg_gap, 2),
+                     'max_gap': round(max_gap, 2),
+                     'std_gap': round(std_gap, 2),
+                     'avg_time': round(avg_time, 2),
+                     'max_time': round(max_time, 2),
+                     'std_time': round(std_time, 2)}
+    res['combined_first'] = fnp
+
+    h_data = get_heuristic_data()
+    obj_data = get_best_fix_and_price_obj(get_fnp_data())
+    data = get_heuristic_gap(h_data, obj_data)
+
+    heuristic = {}
+    for i in ('delayed', 'immediate'):
+        heuristic[i] = {}
+        for scen in ('MOD', 'OPT', 'PES'):
+            gaps = []
+            for j in range(100):
+                gaps.append(data[i][f'{scen}_{j}'])
+            avg_gap = sum(gaps) / len(gaps)
+            max_gap = max(gaps)
+            std_gap = stdev(gaps)
+            heuristic[i][scen] = {'avg_gap': round(avg_gap, 2),
+                                  'max_gap': round(max_gap, 2),
+                                  'std_gap': round(std_gap, 2)}
+    res['heuristic_data'] = heuristic
+    return res
 
 
 def get_alpha_comparison_data(fnp_data):
@@ -135,11 +181,12 @@ def get_alpha_comparison_data(fnp_data):
                 avg_obj = sum(objs) / len(objs)
                 avg_time = sum(times) / len(times)
                 max_time = max(times)
+                print(max_time, times.index(max_time))
                 std_time = stdev(times)
                 res[generation][alpha][scen] = {'avg_obj': avg_obj,
-                                          'avg_time': avg_time,
-                                          'max_time': max_time,
-                                          'std_time': std_time}
+                                                'avg_time': avg_time,
+                                                'max_time': max_time,
+                                                'std_time': std_time}
     return res
 
 
@@ -157,7 +204,7 @@ def bar_chart_alpha_comparison_obj(generation):
 
     plt.bar(index, first_times, bar_width, color='b', label='First')
     plt.bar(index + bar_width, closest_times, bar_width, color='g', label='Closest')
-    plt.xticks(index + bar_width/2, ('Moderate', 'Optimistic', 'Pessimistic'))
+    plt.xticks(index + bar_width / 2, ('Moderate', 'Optimistic', 'Pessimistic'))
     plt.xlabel('Scenarios')
     plt.ylabel('Average Objective Value')
 
@@ -182,7 +229,7 @@ def bar_chart_alpha_comparison_time(generation):
 
     plt.bar(index, first_times, bar_width, color='b', label='First')
     plt.bar(index + bar_width, closest_times, bar_width, color='g', label='Closest')
-    plt.xticks(index + bar_width/2, ('Moderate', 'Optimistic', 'Pessimistic'))
+    plt.xticks(index + bar_width / 2, ('Moderate', 'Optimistic', 'Pessimistic'))
     plt.xlabel('Scenarios')
     plt.ylabel('Average Time Taken (seconds)')
 
@@ -215,6 +262,7 @@ def get_schedule_comparison_data(fnp_data):
                                                 'std_time': std_time}
     return res
 
+
 # fnp_data = get_fnp_data()
 # h_data = get_heuristic_data()
 # a_data = get_alpha_comparison_data(fnp_data)
@@ -226,10 +274,10 @@ def all_scatter_plots():
         for scen in ('OPT', 'MOD', 'PES'):
             heuristic_scatter_plot(i, scen)
 
+
 def all_alpha_comparison_bar_charts():
     for generation in ('combined', 'delayed', 'immediate', 'none'):
         bar_chart_alpha_comparison_obj(generation)
     for generation in ('combined', 'delayed', 'immediate', 'none'):
         bar_chart_alpha_comparison_time(generation)
 
-all_alpha_comparison_bar_charts()
